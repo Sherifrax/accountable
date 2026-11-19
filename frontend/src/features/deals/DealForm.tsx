@@ -38,7 +38,13 @@ type Props = {
   onSaved?: (deal: Deal) => void;
 };
 
-export function DealForm({ deal, stage, organizationId, contactId, onClose, onSaved }: Props) {
+/** Waits for the choices (organizations, contacts, stages) so the selects start on the right values. */
+export function DealForm(props: Props) {
+  const ready = [useStages(), useOrganizations(), useContacts()].every((q) => q.data !== undefined || q.isError);
+  return ready ? <DealFormFields {...props} /> : null;
+}
+
+function DealFormFields({ deal, stage, organizationId, contactId, onClose, onSaved }: Props) {
   const save = useSaveDeal();
   const stages = useStages();
   const organizations = useOrganizations();

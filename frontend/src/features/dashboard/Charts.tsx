@@ -3,7 +3,7 @@ import type { Dashboard } from "../../api/types";
 import { money, monthLabel, plural, shortMoney } from "../../lib/format";
 
 type Months = Dashboard["months"];
-const AXIS = { fontFamily: "var(--font-mono)", fontSize: 11, fill: "var(--ink-faint)" };
+const AXIS = { fontFamily: "var(--font-mono)", fontSize: 11, fill: "var(--ink-muted)" };
 const SIZE = { width: 640, height: 340 };
 
 function Box({ title, rows }: { title: string; rows: [string, string, string?][] }) {

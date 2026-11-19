@@ -32,4 +32,4 @@
 .card.slot { background: transparent; box-shadow: none; border: 2px dashed rgba(61,107,122,.45); }
 .card.slot > * { visibility: hidden; }
 .card.lifted { box-shadow: var(--shadow-lift); transform: rotate(2deg); cursor: grabbing; width: 256px; }
-.col-empty { font-size: 12px; color: var(--ink-faint); text-align: center; padding: 16px 0; }
+.col-empty { font-size: 12px; color: var(--ink-muted); text-align: center; padding: 16px 0; }

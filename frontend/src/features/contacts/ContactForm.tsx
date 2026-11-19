@@ -26,7 +26,13 @@ type Props = {
   onSaved?: (contact: Contact) => void;
 };
 
-export function ContactForm({ contact, organizationId, onClose, onSaved }: Props) {
+/** Waits for the organizations so the select starts on the right one. */
+export function ContactForm(props: Props) {
+  const organizations = useOrganizations();
+  return organizations.data !== undefined || organizations.isError ? <ContactFormFields {...props} /> : null;
+}
+
+function ContactFormFields({ contact, organizationId, onClose, onSaved }: Props) {
   const save = useSaveContact();
   const organizations = useOrganizations();
   const {

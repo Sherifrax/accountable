@@ -212,3 +212,15 @@ test("the reset command brings the sample data back", async ({ page, request }) 
   await expect(row(page, "Brightwave Energy")).toBeVisible();
   await expect(page.getByText("15 organizations")).toBeVisible();
 });
+
+test("the edit forms start on the record's current organization and contact", async ({ page, request }) => {
+  const deal = (await (await request.get(`${API}/deals`)).json()).find((d: { organization_id: number | null; contact_id: number | null }) => d.organization_id && d.contact_id);
+  await page.goto(`/deals/${deal.id}`);
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await expect(dialog(page).getByLabel("Organization")).toHaveValue(String(deal.organization_id));
+  await expect(dialog(page).getByLabel("Contact")).toHaveValue(String(deal.contact_id));
+  await page.keyboard.press("Escape");
+  await page.goto(`/contacts/${deal.contact_id}`);
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await expect(dialog(page).getByLabel("Organization")).toHaveValue(String(deal.organization_id));
+});

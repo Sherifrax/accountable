@@ -1,6 +1,6 @@
 # Status
 
-Work follows `docs/plan.md`. Done so far: phases 0 to 6 (everything except the by-hand check in phase 7).
+Work follows `docs/plan.md`. Done so far: all eight phases of `docs/plan.md`, except that the by-hand check (success criterion 8) still needs a person; see below.
 
 ## Prerequisites (one time)
 
@@ -30,6 +30,15 @@ npm install
 - **Frontend** (`frontend/`): app shell, brand tokens and bundled fonts, typed API layer, shared components, the Organizations, Contacts and Deals tables, record pages, forms with validation, delete confirmations with counts, and activity logging with follow-ups. The Pipeline board has drag and drop (mouse and keyboard) with optimistic moves. The Dashboard has four tiles, a revenue line chart, a won and lost bar chart, the funnel with the open-pipeline stack, follow-ups with done checkboxes, and recent activity.
 - **End to end** (`e2e/`): Playwright config, a fixture that reseeds before each test and fails on any console error or warning, and a smoke test, `02-records.spec.ts` (add, search, sort, edit, restart, delete, reset) and `03-links.spec.ts` (status filter, linked records, timelines) `05-activities.spec.ts`, `06-dashboard.spec.ts`, `07-look.spec.ts` (charts, fonts, colors, no sideways overflow at 1280 and 1440px, screenshots in `e2e/results/screenshots/`, git-ignored), `01-start.spec.ts` (dashboard first, every section, nothing leaves localhost) and `04-pipeline.spec.ts` (drag, totals, Won, order after refresh, keyboard, "+", late tags, server failure).
 - `docs/mockups/prototype.html` stays as the visual reference.
+
+## What was checked, and what still needs a person
+
+- `npm test`: 57 Vitest tests, 81 pytest tests and 30 Playwright tests pass. Every Playwright test fails on any browser console error or warning.
+- Contrast: every `*-ink` shade is at least 4.5:1 on white, on the page and on the panel-sunken grey, and the tag text is at least 4.5:1 on its tint. Text that used `--ink-faint` (2.6:1) was moved to `--ink-muted`; `--ink-faint` is now only for placeholders. White text on Cerulean (3.96:1) is used only at 14px semibold (the funnel bar).
+- Keyboard (R-Q-5): `08-keyboard.spec.ts` checks the Tab order, a visible outline on each stop, focus trapped in dialogs, Escape closing them, and focus going back to the button that opened them.
+- Screenshots of every screen at 1280px and 1440px (`e2e/results/screenshots/`) were looked at by eye while building. That caught an edit form starting on "None" for its organization, now fixed and tested.
+- **Not done:** a person using the whole app by hand in Chrome with the console open (success criterion 8). Run `npm run dev`, open http://localhost:5173, and go through every section and action. Until then, MVP sign-off is open.
+- Known limit: the pipeline's six columns need about 1760px, so at 1440px the board scrolls sideways to reach Won and Lost.
 
 ## Later ideas (not in the spec)
 
