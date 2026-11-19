@@ -76,6 +76,8 @@ test("dropping on Won sets the close date to today", async ({ page, request }) =
   const deals = await getDeals(request);
   const moving = inColumn(deals, "Negotiation")[0];
   await page.goto("/pipeline");
+  // Won sits near the edge of a 1440px window; scroll the board so the drop is well inside it.
+  await page.locator(".board").evaluate((el) => (el.scrollLeft = el.scrollWidth));
   await drag(page, card(page, moving), page.getByTestId("cards-Won"));
   await expect.poll(async () => (await getDeals(request)).find((d) => d.id === moving.id)?.stage).toBe("Won");
   const today = new Date();

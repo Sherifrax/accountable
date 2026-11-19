@@ -267,7 +267,7 @@ def seed(conn, today: date | None = None) -> None:
     slot = 3
     for offsets, done in ((overdue, False), (due_soon, False), (later, False), (done_past, True)):
         for offset in offsets:
-            follow_ups[slot] = (offset, done)
+            follow_ups[slot] = (offset, done, len(follow_ups))
             slot += 7
     texts = {"note": NOTES, "call": CALLS, "email": EMAILS}
     types = ["note", "call", "email", "call", "note", "email", "note"]
@@ -279,9 +279,9 @@ def seed(conn, today: date | None = None) -> None:
             deal_id, contact_id = None, contact_ids[rng.randrange(len(contact_ids))]
         follow = follow_ups.get(i)
         if follow:
-            offset, done = follow
+            offset, done, n = follow
             days_back = rng.randint(max(1, -offset + 1) if offset < 0 else 1, 25)
-            description = FOLLOW_UPS[i % len(FOLLOW_UPS)]
+            description = FOLLOW_UPS[n % len(FOLLOW_UPS)]
             follow_date = _iso(today + timedelta(days=offset))
             kind = "call" if i % 3 else "email"
         else:
