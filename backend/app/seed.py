@@ -71,8 +71,8 @@ OPEN_DEALS = [
     ("Route planning licences", 0, "Negotiation", 71000, -16),
 ]
 WON_DEALS = [
-    ("Depot management suite", 6, 54000, 0),
-    ("Solar monitoring", 9, 31500, 0),
+    ("Depot management suite", 6, 21000, 0),
+    ("Solar monitoring", 9, 9800, 0),
     ("Staff scheduling", 7, 19800, 1),
     ("Brewery ERP", 8, 42000, 2),
     ("Build tracking app", 11, 27500, 3),
