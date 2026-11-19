@@ -7,6 +7,7 @@ import { DealPage } from "./features/deals/DealPage";
 import { DealsPage } from "./features/deals/DealsPage";
 import { OrganizationPage } from "./features/organizations/OrganizationPage";
 import { OrganizationsPage } from "./features/organizations/OrganizationsPage";
+import { PipelinePage } from "./features/pipeline/PipelinePage";
 
 function Soon({ title }: { title: string }) {
   return <PageHeader title={title} />;
@@ -17,7 +18,7 @@ export function App() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<Soon title="Dashboard" />} />
-        <Route path="pipeline" element={<Soon title="Pipeline" />} />
+        <Route path="pipeline" element={<PipelinePage />} />
         <Route path="deals" element={<DealsPage />} />
         <Route path="deals/:id" element={<DealPage />} />
         <Route path="organizations" element={<OrganizationsPage />} />
