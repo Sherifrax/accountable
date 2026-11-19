@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup A: Calm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="mockup-base.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="mockup-data.js"></script>
+<style>
+  /* Mockup A follows docs/spec.md 4.5 as written: separate tiles, 12-column grid, tinted board columns. */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; }
+  .c7 { grid-column: span 7; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; }
+
+  .tile .figure { font: 500 32px/40px var(--font-mono); margin: 8px 0 4px; letter-spacing: -.01em; }
+  .tile .context { font-size: 13px; color: var(--ink-muted); }
+  .up { color: var(--sea-green-ink); } .down { color: var(--raspberry-ink); }
+
+  .panel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .axis { font: 11px var(--font-mono); fill: var(--ink-faint); }
+  .grid-line { stroke: var(--divider); stroke-width: 1; }
+
+  .fu { display: grid; grid-template-columns: 18px 1fr; gap: 4px 12px; padding: 11px 0; }
+  .fu + .fu { border-top: 1px solid var(--divider); }
+  .fu .check { margin-top: 1px; }
+  .fu .title { font-weight: 500; }
+  .fu .meta { grid-column: 2; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-muted); }
+  .fu-group { font: 500 12px/16px var(--font-sans); color: var(--ink-faint); margin: 6px 0 2px; }
+
+  .funnel { display: grid; gap: 8px; }
+  .funnel-row { display: grid; grid-template-columns: 96px 1fr 104px; align-items: center; gap: 12px; }
+  .funnel-bar-wrap { display: flex; justify-content: center; }
+  .funnel-bar { height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font: 500 13px var(--font-mono); color: var(--midnight); }
+  .funnel-kept { text-align: right; font-size: 12px; color: var(--ink-muted); }
+  .funnel-kept .mono { color: var(--ink); font-size: 13px; }
+  .stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; margin: 10px 0 10px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--ink-muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .mono { color: var(--ink); }
+  .sub-head { display: flex; justify-content: space-between; align-items: baseline; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--divider); }
+
+  .acts { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+  .act { display: grid; grid-template-columns: 32px 1fr; gap: 2px 12px; padding: 12px 0; border-top: 1px solid var(--divider); }
+  .act:nth-child(-n+2) { border-top: 0; }
+  .badge { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; grid-row: span 2;
+    background: var(--panel-sunken); color: var(--ink-muted); }
+  .badge svg.lucide { width: 15px; height: 15px; }
+  .act .meta { font-size: 12px; color: var(--ink-muted); }
+  .act .meta a { color: var(--cerulean-ink); text-decoration: none; font-weight: 500; }
+
+  /* Pipeline */
+  .totals { display: flex; gap: 28px; align-items: center; margin-left: auto; margin-right: 8px; }
+  .totals div { text-align: right; }
+  .totals .mono { font: 500 20px/26px var(--font-mono); display: block; }
+  .board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+  .col { position: relative; width: 280px; flex: none; border-radius: var(--radius-panel); padding: 12px; min-height: 740px; }
+  .col-head { padding: 4px 4px 12px; }
+  .col-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .col-name .count { font: 500 12px var(--font-mono); color: var(--ink-muted); background: rgba(255,255,255,.7);
+    padding: 1px 7px; border-radius: 999px; }
+  .col-name .btn-ghost { margin-left: auto; }
+  .col-sums { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--ink-muted); }
+  .col-sums .mono { color: var(--ink); font-size: 13px; }
+  .cards { display: grid; gap: 10px; }
+  .card { background: #fff; border-radius: 10px; box-shadow: var(--shadow-panel); padding: 12px 14px; }
+  .card .name { font-weight: 600; }
+  .card .org { color: var(--ink-muted); font-size: 13px; }
+  .card .contact { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-muted); margin-top: 8px; }
+  .card .contact svg.lucide { width: 13px; height: 13px; }
+  .card .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .card .value { font: 500 14px var(--font-mono); }
+  .card .date { font: 12px var(--font-mono); color: var(--ink-muted); padding: 2px 6px; border-radius: 6px; }
+  .card.late .date { background: rgba(239,71,111,.14); color: var(--raspberry-ink); }
+  .card.lifted { transform: rotate(-2.5deg); box-shadow: var(--shadow-lift); position: relative; z-index: 5; }
+  .slot { height: 112px; border-radius: 10px; border: 2px dashed rgba(61,107,122,.45); }
+  .ghost-card { opacity: .35; }
+  .more { text-align: center; font-size: 12px; color: var(--ink-muted); padding: 6px 0; }
+  .toast { position: absolute; right: 32px; bottom: 28px; background: #fff; border-radius: 10px; box-shadow: var(--shadow-lift);
+    padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .toast svg.lucide { color: var(--sea-green-ink); }
+</style>
+</head>
+<body>
+
+<div class="screen-caption">MOCKUP A · DASHBOARD <em>Calm, as the spec describes it</em></div>
+<div class="app">
+  <aside class="sidebar" data-active="dashboard"></aside>
+  <main class="main">
+    <div class="page-head">
+      <h1 class="page-title">Dashboard</h1>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>New deal</button>
+    </div>
+    <div class="grid">
+      <div class="panel tile c3"><div class="label">Open pipeline</div><div class="figure" id="t-open"></div><div class="context">12 open deals</div></div>
+      <div class="panel tile c3"><div class="label">Expected revenue</div><div class="figure" id="t-exp"></div><div class="context">43% of open pipeline</div></div>
+      <div class="panel tile c3"><div class="label">Won this month</div><div class="figure" id="t-won"></div><div class="context"><span class="down mono">−49%</span> on last month</div></div>
+      <div class="panel tile c3"><div class="label">Win rate</div><div class="figure">67%</div><div class="context">18 won, 9 lost in 12 months</div></div>
+
+      <div class="panel c8">
+        <div class="panel-head"><h2 class="section-title">Revenue won</h2><span class="label">Last 12 months, by close date</span></div>
+        <div class="chart" id="line"></div>
+      </div>
+      <div class="panel c4">
+        <div class="panel-head"><h2 class="section-title">Follow-ups</h2><span class="tag tag-alert">3 overdue</span></div>
+        <div id="fus"></div>
+      </div>
+
+      <div class="panel c7">
+        <div class="panel-head"><h2 class="section-title">Pipeline funnel</h2><span class="label">Value that reached each stage</span></div>
+        <div class="funnel" id="funnel"></div>
+        <div class="sub-head"><span class="section-title" style="font-size:15px">Open pipeline today</span><span class="mono" id="open-total"></span></div>
+        <div class="stack" id="stack"></div>
+        <div class="legend" id="stack-legend"></div>
+      </div>
+      <div class="panel c5">
+        <div class="panel-head"><h2 class="section-title">Deals won and lost</h2>
+          <div class="legend"><span><i class="dot" style="background:var(--stage-won)"></i>Won</span><span><i class="dot" style="background:var(--stage-lost)"></i>Lost</span></div></div>
+        <div class="chart" id="bars"></div>
+      </div>
+
+      <div class="panel c12">
+        <div class="panel-head"><h2 class="section-title">Recent activity</h2><span class="label">Newest first</span></div>
+        <div class="acts" id="acts"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="screen-caption">MOCKUP A · PIPELINE <em>a card being dragged from Proposal to Negotiation</em></div>
+<div class="app" style="position:relative">
+  <aside class="sidebar" data-active="pipeline"></aside>
+  <main class="main">
+    <div class="page-head">
+      <h1 class="page-title">Pipeline</h1>
+      <div class="totals">
+        <div><span class="label">Open pipeline</span><span class="mono">$289,500</span></div>
+        <div><span class="label">Expected revenue</span><span class="mono">$124,430</span></div>
+      </div>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>New deal</button>
+    </div>
+    <div class="board" id="board"></div>
+  </main>
+  <div class="toast"><i data-lucide="circle-check"></i>Deal saved</div>
+</div>
+
+<script>
+const M = MOCK;
+M.renderSidebars();
+document.getElementById("t-open").textContent = M.money(289500);
+document.getElementById("t-exp").textContent = M.money(124430);
+document.getElementById("t-won").textContent = M.money(29900);
+
+// Line chart: revenue won by month
+(() => {
+  const W = 720, H = 450, L = 52, R = 8, T = 10, B = 28, max = 60000;
+  const x = i => L + i * (W - L - R) / 11, y = v => T + (H - T - B) * (1 - v / max);
+  const pts = M.wonRevenue.map((v, i) => [x(i), y(v)]);
+  const line = M.smooth(pts);
+  let g = "";
+  for (let v = 0; v <= max; v += 15000) g += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 10}" y="${y(v) + 4}" text-anchor="end">${M.short(v)}</text>`;
+  M.months.forEach((m, i) => g += `<text class="axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${m}</text>`);
+  const hi = 7;
+  document.getElementById("line").innerHTML = `<svg viewBox="0 0 ${W} ${H}">
+    <defs><linearGradient id="fillA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#06D6A0" stop-opacity=".28"/><stop offset="1" stop-color="#06D6A0" stop-opacity="0"/></linearGradient></defs>
+    ${g}
+    <path d="${line} L${x(11)},${y(0)} L${x(0)},${y(0)} Z" fill="url(#fillA)"/>
+    <path d="${line}" fill="none" stroke="#06D6A0" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="${x(hi)}" x2="${x(hi)}" y1="${T}" y2="${y(0)}" stroke="var(--ink-faint)" stroke-dasharray="3 3"/>
+    <circle cx="${x(hi)}" cy="${y(M.wonRevenue[hi])}" r="5" fill="#fff" stroke="#06D6A0" stroke-width="2.5"/>
+  </svg>
+  <div class="tooltip" style="left:${x(hi) / W * 100 + 1.5}%; top:${y(M.wonRevenue[hi]) / H * 100 - 10}%">
+    <b>Jul 2026</b><span class="mono">$38,400</span> · 2 deals</div>`;
+})();
+
+// Follow-ups
+(() => {
+  const row = f => `<div class="fu"><span class="check"></span><span class="title">${f.text}</span>
+    <span class="meta">${f.overdue ? `<span class="tag tag-alert">${f.when}</span>` : `<span class="tag ${f.when === "Today" ? "tag-info" : "tag-quiet"}">${f.when}</span>`}
+    <span>${f.link}</span></span></div>`;
+  const over = M.followUps.filter(f => f.overdue), soon = M.followUps.filter(f => !f.overdue);
+  document.getElementById("fus").innerHTML = `<div class="fu-group">Overdue</div>${over.map(row).join("")}
+    <div class="fu-group" style="margin-top:10px">Next 7 days</div>${soon.map(row).join("")}`;
+})();
+
+// Funnel and open pipeline stack
+(() => {
+  const max = M.funnel[0].value;
+  document.getElementById("funnel").innerHTML = M.funnel.map((f, i) => {
+    const s = M.stage(f.key), pct = f.value / max * 100;
+    const kept = i ? Math.round(f.value / M.funnel[i - 1].value * 100) + "% kept" : "Started";
+    const ink = f.key === "negotiation" || f.key === "new" ? "#fff" : "var(--midnight)";
+    return `<div class="funnel-row"><span style="font-weight:500">${s.name}</span>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pct}%;background:${s.color};color:${ink}">${M.money(f.value)}</div></div>
+      <span class="funnel-kept">${kept}</span></div>`;
+  }).join("");
+  const open = ["new", "qualified", "proposal", "negotiation"];
+  const total = open.reduce((a, k) => a + M.columnTotals[k].value, 0);
+  document.getElementById("open-total").textContent = M.money(total);
+  document.getElementById("stack").innerHTML = open.map(k => `<div style="flex:${M.columnTotals[k].value};background:${M.stage(k).color}"></div>`).join("");
+  document.getElementById("stack-legend").innerHTML = open.map(k => `<span><i class="dot" style="background:${M.stage(k).color}"></i>${M.stage(k).name} <span class="mono">${M.money(M.columnTotals[k].value)}</span></span>`).join("");
+})();
+
+// Won and lost bars
+(() => {
+  const W = 470, H = 300, L = 26, R = 4, T = 10, B = 28, max = 3;
+  const bw = (W - L - R) / 12, y = v => T + (H - T - B) * (1 - v / max);
+  let g = "";
+  for (let v = 0; v <= max; v++) g += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  M.months.forEach((m, i) => {
+    const cx = L + bw * i + bw / 2, w = 11;
+    g += `<rect x="${cx - w - 1}" y="${y(M.wonCount[i])}" width="${w}" height="${y(0) - y(M.wonCount[i])}" rx="3" fill="var(--stage-won)"/>`;
+    g += `<rect x="${cx + 1}" y="${y(M.lostCount[i])}" width="${w}" height="${y(0) - y(M.lostCount[i])}" rx="3" fill="var(--stage-lost)"/>`;
+    g += `<text class="axis" x="${cx}" y="${H - 6}" text-anchor="middle">${m}</text>`;
+  });
+  document.getElementById("bars").innerHTML = `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
+})();
+
+// Recent activity, two columns, filled down then across
+(() => {
+  const item = a => {
+    const s = a.type === "stage" ? M.stage(a.to) : null;
+    const style = s ? `background:${s.color};color:${a.to === "negotiation" ? "#fff" : "var(--midnight)"}` : "";
+    return `<div class="act"><span class="badge" style="${style}"><i data-lucide="${M.activityIcon[a.type]}"></i></span>
+      <span>${a.text}</span><span class="meta"><span class="mono">${a.at}</span> · ${a.type === "stage" ? "Stage change" : a.type[0].toUpperCase() + a.type.slice(1)} · <a>${a.link}</a></span></div>`;
+  };
+  const order = [0, 5, 1, 6, 2, 7, 3, 8, 4, 9];
+  document.getElementById("acts").innerHTML = order.map(i => item(M.activity[i])).join("");
+})();
+
+// Board
+(() => {
+  const card = (d, extra = "") => `<div class="card ${d.late ? "late" : ""} ${extra}">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div class="name">${d.name}</div>${d.late ? `<span class="tag tag-alert">Late</span>` : ""}</div>
+    <div class="org">${d.org}</div>
+    <div class="contact"><i data-lucide="user"></i>${d.contact}</div>
+    <div class="foot"><span class="value">${M.money(d.value)}</span><span class="date">${d.close}</span></div></div>`;
+  const tint = { new: "rgba(17,138,178,.06)", qualified: "rgba(255,193,69,.09)", proposal: "rgba(247,140,107,.07)",
+    negotiation: "rgba(61,107,122,.06)", won: "rgba(6,214,160,.07)", lost: "rgba(169,184,189,.12)" };
+  const dragged = M.deals.proposal[0];
+  document.getElementById("board").innerHTML = M.stages.map(s => {
+    const t = M.columnTotals[s.key];
+    let cards = M.deals[s.key].map(d => d.dragging ? card(d, "ghost-card") : card(d)).join("");
+    if (s.key === "negotiation") cards = `<div class="slot"></div>` + cards;
+    const shown = M.deals[s.key].length;
+    if (t.count > shown) cards += `<div class="more">${t.count - shown} more ${s.key === "won" ? "won" : "lost"} deals</div>`;
+    return `<section class="col" style="background:${tint[s.key]}">
+      <div class="col-head"><div class="col-name"><i class="dot" style="background:${s.color}"></i>${s.name}<span class="count">${t.count}</span>
+        <button class="btn btn-ghost" title="New deal in ${s.name}"><i data-lucide="plus"></i></button></div>
+        <div class="col-sums"><span>Total <span class="mono">${M.money(t.value)}</span></span><span>Expected <span class="mono">${M.money(t.expected)}</span></span></div></div>
+      <div class="cards">${cards}</div>
+      ${s.key === "negotiation" ? `<div style="position:absolute;top:66px;left:-64px;width:256px">${card(dragged, "lifted")}</div>` : ""}
+    </section>`;
+  }).join("");
+})();
+
+lucide.createIcons();
+</script>
+</body>
+</html>

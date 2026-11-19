@@ -1,0 +1,109 @@
+/* Shared tokens and app shell for the mockups. Tokens copied from docs/spec.md section 4.2. */
+:root {
+  --sea-green: #06D6A0;   --sea-green-ink: #04785A;
+  --marigold:  #FFC145;   --marigold-ink:  #8A5A00;
+  --coral:     #F78C6B;   --coral-ink:     #B0482A;
+  --cerulean:  #118AB2;   --cerulean-ink:  #0C6A89;
+  --raspberry: #EF476F;   --raspberry-ink: #C21E48;
+  --midnight:  #073B4C;
+  --sea-mist:  #CDD8DB;
+
+  --page: #F0F4F5;
+  --panel: #FFFFFF;
+  --panel-sunken: #F6F9F9;
+  --hover: #E9F0F1;
+  --ink: var(--midnight);
+  --ink-muted: #4F6F7A;
+  --ink-faint: #8FA3A9;
+  --divider: #E3EAEC;
+
+  --stage-new: var(--cerulean);
+  --stage-qualified: var(--marigold);
+  --stage-proposal: var(--coral);
+  --stage-negotiation: #3D6B7A;
+  --stage-won: var(--sea-green);
+  --stage-lost: #A9B8BD;
+
+  --radius-panel: 14px;  --radius-control: 8px;  --radius-pill: 999px;
+  --shadow-panel: 0 1px 2px rgba(7,59,76,.04), 0 4px 16px rgba(7,59,76,.05);
+  --shadow-lift: 0 8px 24px rgba(7,59,76,.14);
+
+  --font-sans: "Instrument Sans", -apple-system, "Segoe UI", "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", "Liberation Serif", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: #D9E2E5;
+  color: var(--ink);
+  font: 14px/20px var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-muted); }
+.faint { color: var(--ink-faint); }
+svg.lucide { width: 16px; height: 16px; stroke-width: 2; flex: none; }
+
+/* One screen = one 1440 x 900+ app window, stacked with a caption above it. */
+.screen-caption {
+  width: 1440px; margin: 0 auto; padding: 28px 0 10px;
+  font: 600 13px/16px var(--font-sans); color: var(--ink-muted); letter-spacing: .02em;
+}
+.screen-caption em { font: italic 400 16px var(--font-serif); color: var(--ink); letter-spacing: 0; margin-left: 6px; }
+.app {
+  width: 1440px; min-height: 900px; margin: 0 auto 8px;
+  display: flex; background: var(--page);
+  border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(7,59,76,.14);
+}
+
+/* Sidebar (spec 4.3) */
+.sidebar {
+  width: 232px; flex: none; background: var(--midnight); color: var(--sea-mist);
+  padding: 24px 16px;
+}
+.wordmark { font: 600 20px/24px var(--font-sans); color: #fff; padding: 0 10px; }
+.tagline { font: italic 400 16px/20px var(--font-serif); color: var(--sea-mist); padding: 2px 10px 0; opacity: .85; }
+.nav { margin-top: 28px; display: grid; gap: 4px; }
+.nav a {
+  display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
+  border-radius: var(--radius-pill); color: var(--sea-mist); text-decoration: none; font-weight: 500;
+}
+.nav a.active { background: var(--sea-green); color: var(--midnight); font-weight: 600; }
+
+.main { flex: 1; min-width: 0; padding: 32px; }
+.page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
+.page-title { font: 600 28px/36px var(--font-sans); margin: 0; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
+  border: 0; border-radius: var(--radius-control); font: 600 14px var(--font-sans); cursor: pointer;
+}
+.btn-primary { background: var(--sea-green); color: var(--midnight); }
+.btn-secondary { background: var(--panel-sunken); color: var(--midnight); }
+.btn-ghost { background: transparent; color: var(--ink-muted); width: 28px; height: 28px; padding: 0; justify-content: center; }
+
+.panel { background: var(--panel); border-radius: var(--radius-panel); box-shadow: var(--shadow-panel); padding: 20px; }
+.section-title { font: 600 18px/26px var(--font-sans); margin: 0; }
+.label { font: 500 12px/16px var(--font-sans); color: var(--ink-muted); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px;
+  border-radius: var(--radius-pill); font: 500 12px/16px var(--font-sans); white-space: nowrap;
+}
+.tag-alert { background: rgba(239,71,111,.16); color: var(--raspberry-ink); }
+.tag-info { background: rgba(17,138,178,.14); color: var(--cerulean-ink); }
+.tag-quiet { background: var(--panel-sunken); color: var(--ink-muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; }
+
+.check {
+  width: 18px; height: 18px; border-radius: 5px; flex: none;
+  background: var(--panel-sunken); box-shadow: inset 0 0 0 1.5px var(--ink-faint);
+}
+
+.tooltip {
+  position: absolute; background: #fff; border-radius: 10px; box-shadow: var(--shadow-lift);
+  padding: 10px 12px; font-size: 12px; line-height: 18px; pointer-events: none; white-space: nowrap;
+}
+.tooltip b { font-weight: 600; display: block; font-size: 13px; }

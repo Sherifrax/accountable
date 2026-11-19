@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accountable Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="mockup-base.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  /* Clickable prototype of the MVP. Follows docs/spec.md. Data lives in this browser only. */
+  body { background: var(--page); min-width: 1280px; }
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+  .nav a:not(.active):hover { background: rgba(205,216,219,.1); text-decoration: none; }
+  .side-foot { margin-top: auto; padding: 0 10px; font-size: 12px; line-height: 18px; color: var(--sea-mist); }
+  .side-foot p { margin: 0 0 8px; opacity: .8; }
+  .side-foot button { background: rgba(205,216,219,.12); color: var(--sea-mist); border: 0; border-radius: var(--radius-control);
+    padding: 7px 10px; font: 500 12px var(--font-sans); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+  .side-foot button:hover { background: rgba(205,216,219,.2); }
+  .main { max-width: 1504px; }
+  a { color: var(--cerulean-ink); text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--cerulean); outline-offset: 2px; }
+  .btn-danger { background: var(--raspberry); color: #fff; }
+  .btn-ghost:hover { background: var(--hover); color: var(--ink); }
+  .btn-ghost.danger:hover { color: var(--raspberry-ink); }
+  .btn-secondary:hover { background: var(--hover); }
+  .btn-primary:hover { filter: brightness(.96); }
+
+  /* Dashboard */
+  .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; }
+  .c7 { grid-column: span 7; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; }
+  .tile .figure { font: 500 32px/40px var(--font-mono); margin: 8px 0 4px; letter-spacing: -.01em; }
+  .tile .context { font-size: 13px; color: var(--ink-muted); }
+  .up { color: var(--sea-green-ink); } .down { color: var(--raspberry-ink); }
+  .panel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; gap: 12px; }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .axis { font: 11px var(--font-mono); fill: var(--ink-faint); }
+  .grid-line { stroke: var(--divider); stroke-width: 1; }
+  .fu { display: grid; grid-template-columns: 18px 1fr; gap: 4px 12px; padding: 11px 0; align-items: start; }
+  .fu + .fu { border-top: 1px solid var(--divider); }
+  .fu .title { font-weight: 500; }
+  .fu .meta { grid-column: 2; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-muted); }
+  .fu-group { font: 500 12px/16px var(--font-sans); color: var(--ink-faint); margin: 6px 0 2px; }
+  .funnel { display: grid; gap: 8px; }
+  .funnel-row { display: grid; grid-template-columns: 96px 1fr 104px; align-items: center; gap: 12px; }
+  .funnel-bar-wrap { display: flex; justify-content: center; }
+  .funnel-bar { height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font: 500 13px var(--font-mono); }
+  .funnel-kept { text-align: right; font-size: 12px; color: var(--ink-muted); }
+  .stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; margin: 10px 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--ink-muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .mono { color: var(--ink); }
+  .sub-head { display: flex; justify-content: space-between; align-items: baseline; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--divider); }
+  .acts { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+  .act { display: grid; grid-template-columns: 32px 1fr; gap: 2px 12px; padding: 12px 0; border-top: 1px solid var(--divider); }
+  .act:nth-child(-n+2) { border-top: 0; }
+  .badge { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; grid-row: span 2;
+    background: var(--panel-sunken); color: var(--ink-muted); }
+  .badge svg.lucide { width: 15px; height: 15px; }
+  .meta { font-size: 12px; color: var(--ink-muted); }
+  .empty-note { color: var(--ink-muted); padding: 12px 0; }
+
+  /* Pipeline */
+  .totals { display: flex; gap: 28px; align-items: center; margin-left: auto; margin-right: 8px; }
+  .totals div { text-align: right; }
+  .totals .mono { font: 500 20px/26px var(--font-mono); display: block; }
+  .board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+  .col { width: 280px; flex: none; border-radius: var(--radius-panel); padding: 12px; min-height: calc(100vh - 150px); display: flex; flex-direction: column; }
+  .col.over { box-shadow: inset 0 0 0 2px rgba(61,107,122,.25); }
+  .col-head { padding: 4px 4px 12px; }
+  .col-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .col-name .count { font: 500 12px var(--font-mono); color: var(--ink-muted); background: rgba(255,255,255,.7); padding: 1px 7px; border-radius: 999px; }
+  .col-name .btn-ghost { margin-left: auto; }
+  .col-sums { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--ink-muted); }
+  .col-sums .mono { color: var(--ink); font-size: 13px; }
+  .cards { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; max-height: calc(100vh - 250px); padding: 2px; min-height: 80px; }
+  .card { background: #fff; border-radius: 10px; box-shadow: var(--shadow-panel); padding: 12px 14px; cursor: grab; flex: none; }
+  .card:hover { box-shadow: 0 2px 4px rgba(7,59,76,.06), 0 6px 18px rgba(7,59,76,.09); }
+  .card.dragging { opacity: .35; }
+  .card .name { font-weight: 600; }
+  .card .org { color: var(--ink-muted); font-size: 13px; }
+  .card .contact { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-muted); margin-top: 8px; }
+  .card .contact svg.lucide { width: 13px; height: 13px; }
+  .card .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .card .value { font: 500 14px var(--font-mono); }
+  .card .date { font: 12px var(--font-mono); color: var(--ink-muted); padding: 2px 6px; border-radius: 6px; }
+  .card.late .date { background: rgba(239,71,111,.14); color: var(--raspberry-ink); }
+  .slot { height: 96px; border-radius: 10px; border: 2px dashed rgba(61,107,122,.45); flex: none; }
+  .col-empty { font-size: 12px; color: var(--ink-faint); text-align: center; padding: 16px 0; }
+
+  /* Tables */
+  .toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .search { position: relative; width: 320px; }
+  .search svg.lucide { position: absolute; left: 11px; top: 10px; color: var(--ink-faint); }
+  .search input { padding-left: 34px !important; }
+  input, select, textarea { background: var(--panel-sunken); border: 0; box-shadow: inset 0 0 0 1px var(--divider);
+    border-radius: var(--radius-control); font: 14px var(--font-sans); color: var(--ink); height: 36px; padding: 0 10px; width: 100%; }
+  textarea { height: 84px; padding: 8px 10px; resize: vertical; }
+  .seg { display: inline-flex; background: var(--panel-sunken); border-radius: 999px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+  .seg button { border: 0; background: transparent; height: 30px; padding: 0 12px; border-radius: 999px; font: 500 13px var(--font-sans);
+    color: var(--ink-muted); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+  .seg button:hover { color: var(--ink); }
+  .seg button.on { background: #fff; color: var(--ink); box-shadow: var(--shadow-panel); }
+  .seg .n { font: 12px var(--font-mono); color: var(--ink-faint); }
+  .count-note { margin-left: auto; font-size: 12px; color: var(--ink-muted); }
+  table.dt { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: auto; }
+  .dt th { background: var(--panel-sunken); text-align: left; font: 500 12px/16px var(--font-sans); color: var(--ink-muted); padding: 0; height: 36px; white-space: nowrap; }
+  .dt th:first-child { border-radius: 8px 0 0 8px; } .dt th:last-child { border-radius: 0 8px 8px 0; }
+  .dt th button { all: unset; display: flex; align-items: center; gap: 4px; padding: 0 12px; height: 36px; cursor: pointer; width: 100%; box-sizing: border-box; }
+  .dt th button:hover { color: var(--ink); }
+  .dt th button:focus-visible { outline: 2px solid var(--cerulean); }
+  .dt th.num button { justify-content: flex-end; }
+  .dt th svg.lucide { width: 13px; height: 13px; }
+  .dt td { height: 44px; padding: 0 12px; border-bottom: 1px solid var(--divider); white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+  .dt td.num { text-align: right; font-family: var(--font-mono); font-size: 13px; }
+  .dt td.strong { font-weight: 600; }
+  .dt tbody tr { cursor: pointer; }
+  .dt tbody tr:hover td { background: var(--hover); }
+  .row-acts { display: flex; gap: 2px; justify-content: flex-end; opacity: 0; }
+  tr:hover .row-acts, tr:focus-within .row-acts { opacity: 1; }
+  .empty { padding: 40px 0 !important; text-align: center; color: var(--ink-muted); cursor: default; }
+  .tag-lead { background: rgba(247,140,107,.2); color: var(--coral-ink); }
+  .tag-qualified { background: rgba(255,193,69,.24); color: var(--marigold-ink); }
+  .tag-customer { background: rgba(6,214,160,.18); color: var(--sea-green-ink); }
+  .date-cell { display: inline-flex; gap: 8px; align-items: center; }
+
+  /* Record pages */
+  .crumb { font-size: 13px; margin-bottom: 4px; display: inline-flex; align-items: center; gap: 4px; }
+  .crumb svg.lucide { width: 14px; height: 14px; }
+  .rec-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .facts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+  .head-acts { display: flex; gap: 8px; }
+  .rec-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 16px; align-items: start; }
+  .stack-col { display: grid; gap: 16px; }
+  dl.details { display: grid; grid-template-columns: 130px 1fr; gap: 12px 16px; margin: 0; }
+  dl.details dt { color: var(--ink-muted); font-size: 13px; }
+  dl.details dd { margin: 0; overflow-wrap: anywhere; }
+  .list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--divider); gap: 12px; }
+  .list-row:first-child { border-top: 0; }
+  .list-row .sub { font-size: 12px; color: var(--ink-muted); }
+  .figs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+  .figs .mono { font: 500 22px/30px var(--font-mono); display: block; margin-top: 4px; }
+  .tl-item { display: grid; grid-template-columns: 32px 1fr auto; gap: 2px 12px; padding: 14px 0; border-top: 1px solid var(--divider); }
+  .tl-item:first-child { border-top: 0; }
+  .tl-item .text { font-weight: 500; }
+  .tl-item .meta { grid-column: 2; }
+  .tl-item .tl-acts { grid-row: 1 / span 2; grid-column: 3; display: flex; gap: 2px; opacity: 0; }
+  .tl-item:hover .tl-acts, .tl-item:focus-within .tl-acts { opacity: 1; }
+  .fu-line { grid-column: 2; display: flex; gap: 8px; align-items: center; margin-top: 6px; font-size: 12px; color: var(--ink-muted); }
+  .checkbox { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 5px; background: var(--panel-sunken);
+    box-shadow: inset 0 0 0 1.5px var(--ink-faint); cursor: pointer; display: grid; place-items: center; margin: 0; flex: none; padding: 0; }
+  .checkbox:checked { background: var(--sea-green); box-shadow: none; }
+  .checkbox:checked::after { content: ""; width: 5px; height: 9px; border: solid var(--midnight); border-width: 0 2px 2px 0; transform: translate(0, -1px) rotate(45deg); }
+  .done-text { text-decoration: line-through; color: var(--ink-muted); }
+
+  /* Dialogs */
+  dialog { border: 0; padding: 0; border-radius: 16px; width: 520px; max-width: calc(100vw - 32px); box-shadow: var(--shadow-lift); color: var(--ink); }
+  dialog::backdrop { background: rgba(7,59,76,.35); }
+  .dlg-head { padding: 20px 24px 0; display: flex; justify-content: space-between; align-items: center; }
+  .dlg-body { padding: 18px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+  .field { display: grid; gap: 6px; grid-column: span 2; align-content: start; }
+  .field.half { grid-column: span 1; }
+  .field label { font: 500 12px/16px var(--font-sans); color: var(--ink-muted); }
+  .field .err { color: var(--raspberry-ink); font-size: 12px; min-height: 0; }
+  .field.invalid input, .field.invalid textarea { box-shadow: inset 0 0 0 1.5px var(--raspberry); }
+  .field .hint { font-size: 12px; color: var(--ink-faint); }
+  .check-field { display: flex; align-items: center; gap: 8px; grid-column: span 2; font-size: 14px; }
+  .dlg-foot { padding: 0 24px 20px; display: flex; justify-content: flex-end; gap: 8px; }
+  .dlg-text { padding: 12px 24px 20px; margin: 0; }
+
+  /* Toasts */
+  #toasts { position: fixed; right: 24px; bottom: 24px; display: grid; gap: 8px; z-index: 50; }
+  .toast-item { background: #fff; border-radius: 10px; box-shadow: var(--shadow-lift); padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-weight: 500; animation: tin .18s ease-out; }
+  .toast-item svg.lucide { color: var(--sea-green-ink); }
+  @keyframes tin { from { opacity: 0; transform: translateY(6px); } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main" id="main"></main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-title"></dialog>
+<div id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+// ---------- Constants ----------
+const STAGES = [
+  { key: "new", name: "New", prob: 10, color: "var(--stage-new)", on: "#fff", tint: "rgba(17,138,178,.06)" },
+  { key: "qualified", name: "Qualified", prob: 25, color: "var(--stage-qualified)", on: "var(--midnight)", tint: "rgba(255,193,69,.09)" },
+  { key: "proposal", name: "Proposal", prob: 50, color: "var(--stage-proposal)", on: "var(--midnight)", tint: "rgba(247,140,107,.07)" },
+  { key: "negotiation", name: "Negotiation", prob: 75, color: "var(--stage-negotiation)", on: "#fff", tint: "rgba(61,107,122,.06)" },
+  { key: "won", name: "Won", prob: 100, color: "var(--stage-won)", on: "var(--midnight)", tint: "rgba(6,214,160,.07)" },
+  { key: "lost", name: "Lost", prob: 0, color: "var(--stage-lost)", on: "var(--midnight)", tint: "rgba(169,184,189,.12)" },
+];
+const ST = Object.fromEntries(STAGES.map(s => [s.key, s]));
+const OPEN = ["new", "qualified", "proposal", "negotiation"];
+const LADDER = [...OPEN, "won"];
+const STATUSES = [["lead", "Lead"], ["qualified", "Qualified"], ["customer", "Customer"]];
+const TYPES = [["note", "Note"], ["call", "Call"], ["email", "Email"]];
+const ICON = { note: "sticky-note", call: "phone", email: "mail", stage: "arrow-right" };
+const KEY = "accountable-prototype-v1";
+
+// ---------- Dates, money, text ----------
+const pad = n => String(n).padStart(2, "0");
+const isoD = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseD = s => { const [y, m, d] = s.slice(0, 10).split("-").map(Number); return new Date(y, m - 1, d); };
+const TODAY = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
+const todayIso = () => isoD(new Date());
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const dayDiff = s => Math.round((parseD(s) - TODAY) / 864e5);
+const nowLocal = () => { const d = new Date(); return `${isoD(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtD = s => s ? parseD(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+const fmtDT = s => { const d = new Date(s); return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); };
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+const short = n => n >= 1e6 ? "$" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? "$" + Math.round(n / 1e3) + "K" : money(n);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const rel = s => { const n = dayDiff(s); return n === 0 ? "Today" : n === 1 ? "Tomorrow" : n > 1 ? `in ${n} days` : n === -1 ? "1 day overdue" : `${-n} days overdue`; };
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const $ = s => document.querySelector(s);
+const icons = () => { try { lucide.createIcons(); } catch (e) { /* icons are optional */ } };
+
+// ---------- Sample data (dates are relative to today) ----------
+const ORGS = [
+  ["Mapleton Clinics", "Healthcare", "mapletonclinics.example", "Three clinics in the valley. Growing fast."],
+  ["Ridgeline Freight", "Logistics", "ridgelinefreight.example", "Regional haulier, about 40 trucks."],
+  ["Bluefin Marine Parts", "Manufacturing", "bluefinmarine.example", "Long-standing customer. Pays on time."],
+  ["Fennel Street Bakery Co.", "Food and drink", "fennelstreet.example", "Four shops and a central bakery."],
+  ["Harbor & Pine Logistics", "Logistics", "harborpine.example", ""],
+  ["Copperleaf Hotels", "Hospitality", "copperleafhotels.example", "Two city hotels, a third opening next year."],
+  ["Lumen Analytics", "Software", "lumenanalytics.example", ""],
+  ["Oakfield Builders", "Construction", "oakfieldbuilders.example", "Commercial fit-outs."],
+  ["Saltmarsh Outfitters", "Retail", "saltmarsh.example", "Outdoor gear, six stores."],
+  ["Tessellate Studio", "Creative services", "tessellate.example", ""],
+  ["Granite Peak Schools", "Education", "granitepeak.example", "School district, 11 sites."],
+  ["Kestrel Insurance Brokers", "Finance", "kestrelbrokers.example", ""],
+  ["Verdant Farms Supply", "Agriculture", "verdantfarms.example", "Cold storage across two depots."],
+  ["Brightwater Dental", "Healthcare", "brightwaterdental.example", ""],
+  ["Calder Robotics", "Manufacturing", "calderrobotics.example", "Referred by Bluefin."],
+];
+const CONTACTS = [
+  ["Omar Haddad", "Operations Director", 0, "qualified"], ["Dana Whitlock", "Fleet Manager", 1, "customer"],
+  ["Gus Lindqvist", "Owner", 2, "customer"], ["Priya Natarajan", "General Manager", 3, "customer"],
+  ["Marta Kowalski", "Head of Warehousing", 4, "qualified"], ["Elena Brooks", "IT Manager", 5, "customer"],
+  ["Theo Mensah", "Data Lead", 6, "qualified"], ["Ray Castellano", "Project Director", 7, "qualified"],
+  ["Hana Sato", "Retail Operations Lead", 8, "qualified"], ["Jules Moreau", "Creative Director", 9, "lead"],
+  ["Carol Pruitt", "Procurement Officer", 10, "customer"], ["Sam Adeyemi", "Managing Partner", 11, "qualified"],
+  ["Lena Ortiz", "Supply Chain Manager", 12, "customer"], ["Nadia Petrov", "Practice Manager", 13, "customer"],
+  ["Iain Mercer", "CTO", 14, "customer"], ["Grace Holloway", "Finance Director", 0, "lead"],
+  ["Felix Brandt", "Dispatcher", 1, "lead"], ["Ines Duarte", "Purchasing Manager", 2, "lead"],
+  ["Kofi Asante", "Head Baker", 3, "lead"], ["Ruth Callahan", "CFO", 4, "lead"],
+  ["Mateo Silva", "Front Office Manager", 5, "qualified"], ["Yuki Tanaka", "Product Manager", 6, "lead"],
+  ["Bridget O'Neill", "Site Manager", 7, "lead"], ["Arjun Mehta", "Store Manager", 8, "customer"],
+  ["Clara Jensen", "Studio Manager", 9, "lead"], ["Victor Ramos", "IT Coordinator", 10, "qualified"],
+  ["Amara Okafor", "Account Executive", 11, "lead"], ["Tom Whitaker", "Farm Operations Lead", 12, "lead"],
+  ["Sofia Rossi", "Office Manager", 13, "qualified"], ["Leo Fischer", "Engineering Manager", 14, "qualified"],
+  ["Maya Goldberg", "Head of Nursing", 0, "lead"], ["Ben Carter", "Warehouse Supervisor", 4, "lead"],
+  ["Chloe Dubois", "Events Manager", 5, "lead"], ["Hugo Martins", "Analyst", 6, "customer"],
+  ["Zara Khan", "Estimator", 7, "lead"], ["Owen Price", "Principal", 10, "lead"],
+  ["Lily Chen", "Marketing Lead", 8, "lead"], ["Noah Becker", "Operations Manager", 14, "lead"],
+  ["Aisha Rahman", "Freelance consultant", null, "lead"], ["Daniel Kim", "Independent buyer", null, "lead"],
+];
+// [name, contact index, stage, value, close date offset in days, furthest stage before Lost]
+const DEALS = [
+  ["Clinic scheduling suite", 0, "new", 42000, 99], ["Fleet tracking pilot", 1, "new", 18000, 71],
+  ["Annual support plan", 2, "new", 9800, 54], ["Website refresh", 3, "new", 6500, 26],
+  ["Warehouse sensors", 4, "qualified", 27500, 29], ["Guest Wi-Fi upgrade", 5, "qualified", 15200, -7],
+  ["Data dashboard setup", 6, "qualified", 11000, 64],
+  ["Site survey and quote", 7, "proposal", 33000, 15], ["POS rollout, 6 stores", 8, "proposal", 24600, -6],
+  ["Brand photography", 9, "proposal", 7400, 21],
+  ["District licence renewal", 10, "negotiation", 58000, 12], ["Broker portal", 11, "negotiation", 36500, -13],
+  ["Cold-chain monitoring", 12, "won", 21000, -9], ["Patient reminders", 13, "won", 8900, -16],
+  ["Robot cell integration", 14, "won", 46000, -29], ["Front desk kiosks", 5, "won", 12400, -42],
+  ["Online ordering", 3, "won", 5600, -75], ["Dispatch tablets", 1, "won", 19800, -110],
+  ["Classroom displays", 10, "won", 31200, -140], ["Parts catalogue", 2, "won", 8400, -175],
+  ["Event booking system", 20, "won", 14600, -200], ["Claims dashboard", 11, "won", 22000, -235],
+  ["Security cameras", 22, "won", 17900, -290], ["Shelf labels", 23, "won", 9800, -330],
+  ["Route planning tool", 1, "lost", 14000, -20, "proposal"], ["Loyalty app", 3, "lost", 5200, -56, "qualified"],
+  ["Inventory audit", 2, "lost", 9000, -78, "negotiation"], ["Patient portal", 0, "lost", 26000, -150, "proposal"],
+  ["Drone surveys", 7, "lost", 18500, -210, "new"], ["Moodboard tool", 9, "lost", 4300, -260, "qualified"],
+];
+// [type, contact index or null, deal name or null, description, day offset, hour, follow-up offset, done]
+const ACTS = [
+  ["email", 5, null, "Sent case study and pricing sheet", -1, 11],
+  ["call", null, "POS rollout, 6 stores", "Talked through rollout timing for the six stores", -1, 16],
+  ["note", null, "Broker portal", "Wants a 3-year term with yearly billing", -2, 15],
+  ["call", 1, null, "Intro call, 4 depots to start", -3, 14],
+  ["email", null, "Site survey and quote", "Sent the site survey checklist", -6, 9],
+  ["note", 0, null, "Budget approved for the first quarter", -7, 13],
+  ["call", null, "Cold-chain monitoring", "Agreed the final price", -10, 11],
+  ["call", null, "POS rollout, 6 stores", "Send revised quote with staged payments", -12, 10, -8, false],
+  ["call", 10, null, "Call about licence terms", -14, 15, -5, false],
+  ["email", null, "Broker portal", "Chase signed order form", -6, 12, -2, false],
+  ["call", 7, null, "Book site visit", -4, 10, 0, false],
+  ["email", null, "Fleet tracking pilot", "Share pilot pricing", -3, 16, 2, false],
+  ["call", 6, null, "Check in after demo", -2, 9, 5, false],
+  ["email", 2, null, "Send renewal reminder", -20, 10, 7, false],
+  ["note", null, "Clinic scheduling suite", "Prepare rollout plan for three clinics", -5, 14, 18, false],
+  ["call", 15, null, "Follow up on budget timing", -8, 10, 25, false],
+  ["call", null, "District licence renewal", "Confirm number of school sites", -30, 11, -25, true],
+  ["email", 4, null, "Send sensor spec sheet", -21, 9, -17, true],
+  ["note", null, "Guest Wi-Fi upgrade", "Coverage gaps on floors 3 and 4", -18, 16],
+  ["call", 20, null, "Discussed events calendar needs", -24, 13],
+  ["email", 9, null, "Sent sample shoot schedule", -10, 10],
+  ["note", 8, null, "Prefers email over calls", -40, 9],
+  ["call", 23, null, "Quarterly check-in, all happy", -45, 15],
+  ["email", null, "Warehouse sensors", "Sent pilot results from a similar site", -11, 10],
+  ["note", null, "Data dashboard setup", "Needs single sign-on before go-live", -15, 14],
+  ["call", null, "Brand photography", "Agreed the shot list", -9, 16],
+  ["email", 36, null, "Introduced our loyalty features", -33, 11],
+  ["call", null, "Website refresh", "Walked through the new menu pages", -13, 10],
+  ["note", null, "Annual support plan", "Renewal due in January", -27, 12],
+  ["call", 25, null, "Talked about display sizes", -50, 14],
+  ["email", null, "Robot cell integration", "Sent signed contract", -29, 16],
+];
+
+function seed() {
+  const S = { orgs: [], contacts: [], deals: [], acts: [], next: 1 };
+  const id = () => S.next++;
+  const at = (off, h, m = 0) => `${isoD(addDays(TODAY, off))}T${pad(h)}:${pad(m)}`;
+  ORGS.forEach(([name, industry, website, notes]) => S.orgs.push({ id: id(), name, industry, website, notes }));
+  CONTACTS.forEach(([name, title, oi, status], i) => {
+    const org = oi == null ? null : S.orgs[oi];
+    const [first, ...rest] = name.toLowerCase().replace(/'/g, "").split(" ");
+    S.contacts.push({ id: id(), name, title, status, orgId: org ? org.id : null,
+      email: `${first}.${rest.join("")}@${org ? org.website : "mailbox.example"}`, phone: `+1 555-01${pad(10 + (i * 37) % 90)}` });
+  });
+  const posCount = {};
+  DEALS.forEach(([name, ci, stage, value, closeOff, reach], i) => {
+    const c = S.contacts[ci];
+    const d = { id: id(), name, contactId: c.id, orgId: c.orgId, stage, value, prob: ST[stage].prob,
+      close: isoD(addDays(TODAY, closeOff)), pos: posCount[stage] = (posCount[stage] ?? -1) + 1 };
+    S.deals.push(d);
+    const path = stage === "won" ? LADDER : stage === "lost" ? [...OPEN.slice(0, OPEN.indexOf(reach) + 1), "lost"] : OPEN.slice(0, OPEN.indexOf(stage) + 1);
+    const lastOff = OPEN.includes(stage) ? -(2 + (i * 7) % 20) : closeOff;
+    for (let k = path.length - 1, off = lastOff; k >= 1; k--, off -= 9 + (i + k) % 8) {
+      S.acts.push({ id: id(), type: "stage", dealId: d.id, contactId: c.id, from: path[k - 1], to: path[k],
+        desc: `Moved from ${ST[path[k - 1]].name} to ${ST[path[k]].name}`, at: at(off, 9 + (i + k) % 8, (i * 13) % 60), followUp: null, done: false });
+    }
+    if (!OPEN.includes(stage) && closeOff < -30) {
+      const [type, desc] = stage === "won" ? [["call", "Agreed the final price"], ["email", "Sent the final proposal"]][i % 2]
+        : [["note", "Chose another supplier on price"], ["call", "Budget moved to next year"]][i % 2];
+      S.acts.push({ id: id(), type, dealId: d.id, contactId: c.id, desc, at: at(closeOff - 3, 11), followUp: null, done: false });
+    }
+  });
+  ACTS.forEach(([type, ci, dealName, desc, off, h, fu, done]) => {
+    const d = dealName ? S.deals.find(x => x.name === dealName) : null;
+    S.acts.push({ id: id(), type, desc, dealId: d ? d.id : null, contactId: d ? d.contactId : S.contacts[ci].id,
+      at: at(off, h, (off * -17) % 60), followUp: fu == null ? null : isoD(addDays(TODAY, fu)), done: !!done });
+  });
+  return S;
+}
+
+// ---------- Store ----------
+let S = null;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
+if (!S || !Array.isArray(S.orgs)) S = seed();
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } };
+save();
+
+const org = id => S.orgs.find(o => o.id === id);
+const contact = id => S.contacts.find(c => c.id === id);
+const deal = id => S.deals.find(d => d.id === id);
+const isOpen = d => OPEN.includes(d.stage);
+const isLate = d => isOpen(d) && d.close && d.close < todayIso();
+const expected = d => d.value * d.prob / 100;
+const byPos = (a, b) => a.pos - b.pos;
+const newest = (a, b) => b.at.localeCompare(a.at);
+const column = stage => S.deals.filter(d => d.stage === stage).sort(byPos);
+const renumber = stage => column(stage).forEach((d, i) => d.pos = i);
+
+function changeStage(d, to, prob) {
+  if (d.stage === to) return false;
+  const from = d.stage;
+  d.stage = to;
+  d.prob = prob ?? ST[to].prob;
+  if (to === "won" || to === "lost") d.close = todayIso();
+  S.acts.push({ id: S.next++, type: "stage", dealId: d.id, contactId: d.contactId, from, to,
+    desc: `Moved from ${ST[from].name} to ${ST[to].name}`, at: nowLocal(), followUp: null, done: false });
+  return true;
+}
+function moveDeal(id, to, index, prob) {
+  const d = deal(id), from = d.stage;
+  const col = S.deals.filter(x => x.stage === to && x.id !== id).sort(byPos);
+  col.splice(Math.max(0, Math.min(index, col.length)), 0, d);
+  const changed = changeStage(d, to, prob);
+  col.forEach((x, i) => x.pos = i);
+  if (from !== to) renumber(from);
+  save();
+  return changed;
+}
+
+// Delete rules (spec R-DEL-1 to R-DEL-3)
+const orgImpact = o => ({ contacts: S.contacts.filter(c => c.orgId === o.id).length, deals: S.deals.filter(d => d.orgId === o.id).length });
+const contactImpact = c => ({ deals: S.deals.filter(d => d.contactId === c.id).length,
+  gone: S.acts.filter(a => a.contactId === c.id && !a.dealId).length, kept: S.acts.filter(a => a.contactId === c.id && a.dealId).length });
+const dealImpact = d => ({ gone: S.acts.filter(a => a.dealId === d.id && (a.type === "stage" || !a.contactId)).length,
+  kept: S.acts.filter(a => a.dealId === d.id && a.type !== "stage" && a.contactId).length });
+function deleteOrg(o) {
+  S.contacts.forEach(c => { if (c.orgId === o.id) c.orgId = null; });
+  S.deals.forEach(d => { if (d.orgId === o.id) d.orgId = null; });
+  S.orgs = S.orgs.filter(x => x !== o);
+}
+function deleteContact(c) {
+  S.deals.forEach(d => { if (d.contactId === c.id) d.contactId = null; });
+  S.acts = S.acts.filter(a => !(a.contactId === c.id && !a.dealId));
+  S.acts.forEach(a => { if (a.contactId === c.id) a.contactId = null; });
+  S.contacts = S.contacts.filter(x => x !== c);
+}
+function deleteDeal(d) {
+  S.acts = S.acts.filter(a => !(a.dealId === d.id && (a.type === "stage" || !a.contactId)));
+  S.acts.forEach(a => { if (a.dealId === d.id) a.dealId = null; });
+  S.deals = S.deals.filter(x => x !== d);
+  renumber(d.stage);
+}
+
+// ---------- Small renderers ----------
+const stageTag = k => `<span class="tag tag-quiet"><i class="dot" style="background:${ST[k].color}"></i>${ST[k].name}</span>`;
+const statusTag = s => `<span class="tag tag-${s}">${STATUSES.find(x => x[0] === s)[1]}</span>`;
+const lateTag = `<span class="tag tag-alert">Late</span>`;
+const orgLink = id => { const o = org(id); return o ? `<a href="#/organizations/${o.id}">${esc(o.name)}</a>` : `<span class="faint">None</span>`; };
+const contactLink = id => { const c = contact(id); return c ? `<a href="#/contacts/${c.id}">${esc(c.name)}</a>` : `<span class="faint">None</span>`; };
+const dealLink = id => { const d = deal(id); return d ? `<a href="#/deals/${d.id}">${esc(d.name)}</a>` : ""; };
+const typeName = t => t === "stage" ? "Stage change" : TYPES.find(x => x[0] === t)[1];
+const badge = a => {
+  const style = a.type === "stage" ? `background:${ST[a.to].color};color:${ST[a.to].on}` : "";
+  return `<span class="badge" style="${style}"><i data-lucide="${ICON[a.type]}"></i></span>`;
+};
+const websiteHref = w => /^https?:\/\//i.test(w) ? w : "https://" + w;
+
+function timeline(acts, ctx) {
+  if (!acts.length) return `<p class="empty-note">Nothing logged yet.</p>`;
+  return acts.sort(newest).map(a => {
+    const links = [];
+    if (a.dealId && ctx !== "deal") links.push(dealLink(a.dealId));
+    if (a.contactId && ctx !== "contact") links.push(contactLink(a.contactId));
+    let fu = "";
+    if (a.followUp) {
+      const overdue = !a.done && a.followUp < todayIso();
+      fu = `<div class="fu-line"><input type="checkbox" class="checkbox" data-toggle="${a.id}" ${a.done ? "checked" : ""} aria-label="Mark follow-up done">
+        <span>Follow up <span class="mono">${fmtD(a.followUp)}</span></span>
+        ${a.done ? `<span class="tag tag-quiet">Done</span>` : overdue ? `<span class="tag tag-alert">Overdue</span>` : `<span class="tag tag-quiet">${rel(a.followUp)}</span>`}</div>`;
+    }
+    const acts = a.type === "stage" ? "" : `<div class="tl-acts">
+      <button class="btn btn-ghost" data-action="edit-act" data-id="${a.id}" title="Edit activity" aria-label="Edit activity"><i data-lucide="pencil"></i></button>
+      <button class="btn btn-ghost danger" data-action="del-act" data-id="${a.id}" title="Delete activity" aria-label="Delete activity"><i data-lucide="trash-2"></i></button></div>`;
+    return `<div class="tl-item">${badge(a)}<span class="text">${esc(a.desc)}</span>${acts}
+      <span class="meta"><span class="mono">${fmtDT(a.at)}</span> · ${typeName(a.type)}${links.filter(Boolean).length ? " · " + links.filter(Boolean).join(" · ") : ""}</span>${fu}</div>`;
+  }).join("");
+}
+
+// ---------- Sidebar ----------
+function renderSidebar(section) {
+  const items = [["dashboard", "layout-dashboard", "Dashboard"], ["pipeline", "kanban", "Pipeline"], ["deals", "handshake", "Deals"],
+    ["organizations", "building-2", "Organizations"], ["contacts", "users", "Contacts"]];
+  $("#sidebar").innerHTML = `<div class="wordmark">Accountable</div><div class="tagline">Sales, in order.</div>
+    <nav class="nav">${items.map(([k, icon, label]) => `<a href="#/${k}" class="${section === k ? "active" : ""}" ${section === k ? 'aria-current="page"' : ""}><i data-lucide="${icon}"></i>${label}</a>`).join("")}</nav>
+    <div class="side-foot"><p>Prototype. Changes are saved in this browser only.</p>
+      <button data-action="reset"><i data-lucide="rotate-ccw"></i>Reset sample data</button></div>`;
+}
+
+// ---------- Dashboard ----------
+function viewDashboard() {
+  const open = S.deals.filter(isOpen);
+  const openValue = open.reduce((a, d) => a + d.value, 0), openExp = open.reduce((a, d) => a + expected(d), 0);
+  const months = [...Array(12)].map((_, i) => { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - 11 + i, 1);
+    return { key: `${d.getFullYear()}-${pad(d.getMonth() + 1)}`, label: d.toLocaleDateString("en-US", { month: "short" }),
+      long: d.toLocaleDateString("en-US", { month: "short", year: "numeric" }), rev: 0, won: 0, lost: 0 }; });
+  const mk = Object.fromEntries(months.map(m => [m.key, m]));
+  S.deals.forEach(d => { const m = d.close && mk[d.close.slice(0, 7)]; if (!m) return;
+    if (d.stage === "won") { m.rev += d.value; m.won++; } if (d.stage === "lost") m.lost++; });
+  const cur = months[11], prev = months[10];
+  const won12 = months.reduce((a, m) => a + m.won, 0), lost12 = months.reduce((a, m) => a + m.lost, 0);
+  const winRate = won12 + lost12 ? Math.round(won12 / (won12 + lost12) * 100) : 0;
+  const change = prev.rev ? Math.round((cur.rev - prev.rev) / prev.rev * 100) : null;
+
+  const pending = S.acts.filter(a => a.followUp && !a.done);
+  const overdue = pending.filter(a => a.followUp < todayIso()).sort((a, b) => a.followUp.localeCompare(b.followUp));
+  const soon = pending.filter(a => { const n = dayDiff(a.followUp); return n >= 0 && n <= 7; }).sort((a, b) => a.followUp.localeCompare(b.followUp));
+  const fuRow = a => `<div class="fu"><input type="checkbox" class="checkbox" data-toggle="${a.id}" aria-label="Mark done: ${esc(a.desc)}">
+    <span class="title">${esc(a.desc)}</span><span class="meta"><span class="tag ${a.followUp < todayIso() ? "tag-alert" : dayDiff(a.followUp) === 0 ? "tag-info" : "tag-quiet"}">${rel(a.followUp)}</span>
+    ${a.dealId ? dealLink(a.dealId) : contactLink(a.contactId)}</span></div>`;
+
+  const reach = d => { let m = LADDER.indexOf(d.stage);
+    S.acts.forEach(a => { if (a.type === "stage" && a.dealId === d.id) m = Math.max(m, LADDER.indexOf(a.from), LADDER.indexOf(a.to)); });
+    return Math.max(m, 0); };
+  const reached = S.deals.map(d => [d, reach(d)]);
+  const funnel = LADDER.map((k, i) => ({ k, v: reached.filter(([, r]) => r >= i).reduce((a, [d]) => a + d.value, 0) }));
+  const fmax = funnel[0].v || 1;
+
+  const recent = [...S.acts].sort(newest).slice(0, 10);
+  const half = Math.ceil(recent.length / 2), order = [];
+  for (let i = 0; i < half; i++) { order.push(recent[i]); if (recent[i + half]) order.push(recent[i + half]); }
+
+  // Line chart geometry
+  const W = 720, H = 400, L = 52, R = 8, T = 10, B = 28;
+  const lmax = Math.max(15000, Math.ceil(Math.max(...months.map(m => m.rev)) / 15000) * 15000);
+  const x = i => L + i * (W - L - R) / 11, y = v => T + (H - T - B) * (1 - v / lmax);
+  const pts = months.map((m, i) => [x(i), y(m.rev)]);
+  const smooth = pts.reduce((d, p, i, a) => { if (!i) return `M${p[0]},${p[1]}`;
+    const p0 = a[i - 2] || a[i - 1], p1 = a[i - 1], p3 = a[i + 1] || p;
+    const base = y(0), c1y = Math.min(base, p1[1] + (p[1] - p0[1]) / 6), c2y = Math.min(base, p[1] - (p3[1] - p1[1]) / 6);
+    return d + ` C${p1[0] + (p[0] - p0[0]) / 6},${c1y} ${p[0] - (p3[0] - p1[0]) / 6},${c2y} ${p[0]},${p[1]}`; }, "");
+  let lg = "";
+  for (let v = 0; v <= lmax; v += lmax / 4) lg += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 10}" y="${y(v) + 4}" text-anchor="end">${short(v)}</text>`;
+  months.forEach((m, i) => lg += `<text class="axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${m.label}</text>`);
+
+  // Bar chart geometry
+  const BW = 470, BH = 300, BL = 26, BR = 4, BT = 10, BB = 28;
+  const bmax = Math.max(3, ...months.map(m => Math.max(m.won, m.lost)));
+  const bw = (BW - BL - BR) / 12, by = v => BT + (BH - BT - BB) * (1 - v / bmax);
+  let bg = "";
+  for (let v = 0; v <= bmax; v++) bg += `<line class="grid-line" x1="${BL}" x2="${BW - BR}" y1="${by(v)}" y2="${by(v)}"/><text class="axis" x="${BL - 8}" y="${by(v) + 4}" text-anchor="end">${v}</text>`;
+  months.forEach((m, i) => { const cx = BL + bw * i + bw / 2, w = 11;
+    bg += `<rect x="${cx - w - 1}" y="${by(m.won)}" width="${w}" height="${by(0) - by(m.won)}" rx="3" fill="var(--stage-won)"><title>${m.long}: ${plural(m.won, "deal")} won</title></rect>`;
+    bg += `<rect x="${cx + 1}" y="${by(m.lost)}" width="${w}" height="${by(0) - by(m.lost)}" rx="3" fill="var(--stage-lost)"><title>${m.long}: ${plural(m.lost, "deal")} lost</title></rect>`;
+    bg += `<text class="axis" x="${cx}" y="${BH - 6}" text-anchor="middle">${m.label}</text>`; });
+
+  const html = `
+    <div class="page-head"><h1 class="page-title">Dashboard</h1>
+      <button class="btn btn-primary" data-action="new-deal"><i data-lucide="plus"></i>New deal</button></div>
+    <div class="grid">
+      <div class="panel tile c3"><div class="label">Open pipeline</div><div class="figure">${money(openValue)}</div><div class="context">${plural(open.length, "open deal")}</div></div>
+      <div class="panel tile c3"><div class="label">Expected revenue</div><div class="figure">${money(openExp)}</div><div class="context">${openValue ? Math.round(openExp / openValue * 100) : 0}% of open pipeline</div></div>
+      <div class="panel tile c3"><div class="label">Won this month</div><div class="figure">${money(cur.rev)}</div>
+        <div class="context">${change == null ? "No wins last month" : `<span class="${change >= 0 ? "up" : "down"} mono">${change >= 0 ? "+" : "−"}${Math.abs(change)}%</span> on last month`}</div></div>
+      <div class="panel tile c3"><div class="label">Win rate</div><div class="figure">${winRate}%</div><div class="context">${won12} won, ${lost12} lost in 12 months</div></div>
+
+      <div class="panel c8"><div class="panel-head"><h2 class="section-title">Revenue won</h2><span class="label">Last 12 months, by close date</span></div>
+        <div class="chart" id="line"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Revenue won by month">
+          <defs><linearGradient id="fillA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#06D6A0" stop-opacity=".28"/><stop offset="1" stop-color="#06D6A0" stop-opacity="0"/></linearGradient></defs>
+          ${lg}<path d="${smooth} L${x(11)},${y(0)} L${x(0)},${y(0)} Z" fill="url(#fillA)"/>
+          <path d="${smooth}" fill="none" stroke="#06D6A0" stroke-width="2.5" stroke-linecap="round"/>
+          <line id="guide" y1="${T}" y2="${y(0)}" stroke="var(--ink-faint)" stroke-dasharray="3 3" visibility="hidden"/>
+          <circle id="mark" r="5" fill="#fff" stroke="#06D6A0" stroke-width="2.5" visibility="hidden"/>
+          <rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" id="hit"/></svg>
+          <div class="tooltip" id="tip" style="display:none"></div></div></div>
+      <div class="panel c4"><div class="panel-head"><h2 class="section-title">Follow-ups</h2>${overdue.length ? `<span class="tag tag-alert">${overdue.length} overdue</span>` : ""}</div>
+        ${overdue.length || soon.length ? `${overdue.length ? `<div class="fu-group">Overdue</div>${overdue.map(fuRow).join("")}` : ""}
+          ${soon.length ? `<div class="fu-group" style="margin-top:10px">Next 7 days</div>${soon.map(fuRow).join("")}` : ""}`
+          : `<p class="empty-note">Nothing due this week.</p>`}</div>
+
+      <div class="panel c7"><div class="panel-head"><h2 class="section-title">Pipeline funnel</h2><span class="label">Value that reached each stage</span></div>
+        <div class="funnel">${funnel.map((f, i) => `<div class="funnel-row"><span style="font-weight:500">${ST[f.k].name}</span>
+          <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.max(f.v / fmax * 100, 22)}%;background:${ST[f.k].color};color:${ST[f.k].on}">${money(f.v)}</div></div>
+          <span class="funnel-kept">${i ? (funnel[i - 1].v ? Math.round(f.v / funnel[i - 1].v * 100) : 0) + "% kept" : "All deals"}</span></div>`).join("")}</div>
+        <div class="sub-head"><span class="section-title" style="font-size:15px">Open pipeline today</span><span class="mono">${money(openValue)}</span></div>
+        <div class="stack">${OPEN.map(k => { const v = column(k).reduce((a, d) => a + d.value, 0); return v ? `<div style="flex:${v};background:${ST[k].color}" title="${ST[k].name}: ${money(v)}"></div>` : ""; }).join("")}</div>
+        <div class="legend">${OPEN.map(k => `<span><i class="dot" style="background:${ST[k].color}"></i>${ST[k].name} <span class="mono">${money(column(k).reduce((a, d) => a + d.value, 0))}</span></span>`).join("")}</div></div>
+      <div class="panel c5"><div class="panel-head"><h2 class="section-title">Deals won and lost</h2>
+        <div class="legend"><span><i class="dot" style="background:var(--stage-won)"></i>Won</span><span><i class="dot" style="background:var(--stage-lost)"></i>Lost</span></div></div>
+        <div class="chart"><svg viewBox="0 0 ${BW} ${BH}" role="img" aria-label="Deals won and lost by month">${bg}</svg></div></div>
+
+      <div class="panel c12"><div class="panel-head"><h2 class="section-title">Recent activity</h2><span class="label">Newest first</span></div>
+        <div class="acts">${order.map(a => `<div class="act">${badge(a)}<span>${esc(a.desc)}</span>
+          <span class="meta"><span class="mono">${fmtDT(a.at)}</span> · ${typeName(a.type)} · ${a.dealId ? dealLink(a.dealId) : contactLink(a.contactId)}</span></div>`).join("") || `<p class="empty-note">No activity yet.</p>`}</div></div>
+    </div>`;
+
+  const after = () => {
+    const box = $("#line"), svg = box.querySelector("svg"), tip = $("#tip"), mark = $("#mark"), guide = $("#guide");
+    svg.addEventListener("mousemove", e => {
+      const r = svg.getBoundingClientRect(), vx = (e.clientX - r.left) / r.width * W;
+      const i = Math.max(0, Math.min(11, Math.round((vx - L) / ((W - L - R) / 11)))), m = months[i];
+      mark.setAttribute("cx", x(i)); mark.setAttribute("cy", y(m.rev)); guide.setAttribute("x1", x(i)); guide.setAttribute("x2", x(i));
+      mark.setAttribute("visibility", "visible"); guide.setAttribute("visibility", "visible");
+      tip.innerHTML = `<b>${m.long}</b><span class="mono">${money(m.rev)}</span> · ${plural(m.won, "deal")}`;
+      tip.style.display = "block";
+      const left = x(i) / W * 100;
+      tip.style.left = left > 70 ? "" : `calc(${left}% + 12px)`; tip.style.right = left > 70 ? `calc(${100 - left}% + 12px)` : "";
+      tip.style.top = `calc(${y(m.rev) / H * 100}% - 20px)`;
+    });
+    svg.addEventListener("mouseleave", () => { tip.style.display = "none"; mark.setAttribute("visibility", "hidden"); guide.setAttribute("visibility", "hidden"); });
+  };
+  return { html, after };
+}
+
+// ---------- Pipeline ----------
+function viewPipeline() {
+  const open = S.deals.filter(isOpen);
+  const card = d => `<div class="card ${isLate(d) ? "late" : ""}" draggable="true" data-id="${d.id}" data-href="#/deals/${d.id}" tabindex="0" aria-label="${esc(d.name)}">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div class="name">${esc(d.name)}</div>${isLate(d) ? lateTag : ""}</div>
+    <div class="org">${esc(org(d.orgId)?.name ?? "No organization")}</div>
+    ${d.contactId ? `<div class="contact"><i data-lucide="user"></i>${esc(contact(d.contactId)?.name)}</div>` : ""}
+    <div class="foot"><span class="value">${money(d.value)}</span><span class="date">${fmtD(d.close)}</span></div></div>`;
+  const html = `
+    <div class="page-head"><h1 class="page-title">Pipeline</h1>
+      <div class="totals"><div><span class="label">Open pipeline</span><span class="mono">${money(open.reduce((a, d) => a + d.value, 0))}</span></div>
+        <div><span class="label">Expected revenue</span><span class="mono">${money(open.reduce((a, d) => a + expected(d), 0))}</span></div></div>
+      <button class="btn btn-primary" data-action="new-deal"><i data-lucide="plus"></i>New deal</button></div>
+    <div class="board" id="board">${STAGES.map(s => { const col = column(s.key);
+      return `<section class="col" style="background:${s.tint}" data-stage="${s.key}" aria-label="${s.name}">
+        <div class="col-head"><div class="col-name"><i class="dot" style="background:${s.color}"></i>${s.name}<span class="count">${col.length}</span>
+          <button class="btn btn-ghost" data-action="new-deal" data-stage="${s.key}" title="New deal in ${s.name}" aria-label="New deal in ${s.name}"><i data-lucide="plus"></i></button></div>
+          <div class="col-sums"><span>Total <span class="mono">${money(col.reduce((a, d) => a + d.value, 0))}</span></span>
+            <span>Expected <span class="mono">${money(col.reduce((a, d) => a + expected(d), 0))}</span></span></div></div>
+        <div class="cards">${col.map(card).join("") || `<div class="col-empty">Drop a deal here</div>`}</div></section>`; }).join("")}</div>`;
+  const after = () => {
+    let dragId = null;
+    const clearSlots = () => { document.querySelectorAll(".slot").forEach(s => s.remove()); document.querySelectorAll(".col.over").forEach(c => c.classList.remove("over")); };
+    const indexAt = (list, cy) => { const cards = [...list.querySelectorAll(".card:not(.dragging)")];
+      const i = cards.findIndex(c => { const r = c.getBoundingClientRect(); return cy < r.top + r.height / 2; }); return [i < 0 ? cards.length : i, cards]; };
+    document.querySelectorAll(".card").forEach(c => {
+      c.addEventListener("dragstart", e => { dragId = +c.dataset.id; e.dataTransfer.setData("text/plain", c.dataset.id); e.dataTransfer.effectAllowed = "move"; requestAnimationFrame(() => c.classList.add("dragging")); });
+      c.addEventListener("dragend", () => { c.classList.remove("dragging"); clearSlots(); });
+    });
+    document.querySelectorAll(".col").forEach(colEl => {
+      const list = colEl.querySelector(".cards");
+      colEl.addEventListener("dragover", e => {
+        if (dragId == null) return;
+        e.preventDefault();
+        const [i, cards] = indexAt(list, e.clientY);
+        const slot = document.querySelector(".slot") || Object.assign(document.createElement("div"), { className: "slot" });
+        document.querySelectorAll(".col.over").forEach(c => c !== colEl && c.classList.remove("over")); colEl.classList.add("over");
+        const emptyNote = list.querySelector(".col-empty"); if (emptyNote) emptyNote.style.display = "none";
+        if (cards[i]) { if (slot.nextSibling !== cards[i]) list.insertBefore(slot, cards[i]); } else if (list.lastElementChild !== slot) list.appendChild(slot);
+      });
+      colEl.addEventListener("drop", e => {
+        e.preventDefault();
+        if (dragId == null) return;
+        const [i] = indexAt(list, e.clientY), id = dragId; dragId = null;
+        const before = deal(id).stage, changed = moveDeal(id, colEl.dataset.stage, i);
+        route();
+        toast(changed ? `Moved to ${ST[colEl.dataset.stage].name}` : "Order saved");
+        if (changed && before !== colEl.dataset.stage && (colEl.dataset.stage === "won" || colEl.dataset.stage === "lost")) toast("Close date set to today");
+      });
+    });
+  };
+  return { html, after };
+}
+
+// ---------- Tables ----------
+const TS = { organizations: { q: "", key: "name", dir: 1 }, contacts: { q: "", key: "name", dir: 1, status: "all" }, deals: { q: "", key: "close", dir: 1 } };
+let CUR = null;
+const rowActs = (kind, id) => `<td style="width:76px"><div class="row-acts">
+  <button class="btn btn-ghost" data-action="edit-${kind}" data-id="${id}" title="Edit" aria-label="Edit"><i data-lucide="pencil"></i></button>
+  <button class="btn btn-ghost danger" data-action="del-${kind}" data-id="${id}" title="Delete" aria-label="Delete"><i data-lucide="trash-2"></i></button></div></td>`;
+
+const TABLES = {
+  organizations: { title: "Organizations", noun: "organizations", kind: "org", newLabel: "New organization", href: r => `#/organizations/${r.id}`,
+    rows: () => S.orgs, cols: [
+      { key: "name", label: "Name", val: r => r.name, cls: "strong" },
+      { key: "industry", label: "Industry", val: r => r.industry },
+      { key: "website", label: "Website", val: r => r.website, html: r => r.website ? `<a href="${esc(websiteHref(r.website))}" target="_blank" rel="noopener">${esc(r.website)}</a>` : "" },
+      { key: "contacts", label: "Contacts", num: true, val: r => S.contacts.filter(c => c.orgId === r.id).length },
+      { key: "open", label: "Open deals", num: true, val: r => S.deals.filter(d => d.orgId === r.id && isOpen(d)).length },
+      { key: "value", label: "Open value", num: true, val: r => S.deals.filter(d => d.orgId === r.id && isOpen(d)).reduce((a, d) => a + d.value, 0), html: r => money(TABLES.organizations.cols[5].val(r)) },
+    ] },
+  contacts: { title: "Contacts", noun: "contacts", kind: "contact", newLabel: "New contact", href: r => `#/contacts/${r.id}`, filter: true,
+    rows: () => S.contacts, cols: [
+      { key: "name", label: "Name", val: r => r.name, cls: "strong" },
+      { key: "org", label: "Organization", val: r => org(r.orgId)?.name ?? "" },
+      { key: "title", label: "Job title", val: r => r.title },
+      { key: "email", label: "Email", val: r => r.email },
+      { key: "phone", label: "Phone", val: r => r.phone, cls: "mono" },
+      { key: "status", label: "Status", val: r => r.status, html: r => statusTag(r.status) },
+    ] },
+  deals: { title: "Deals", noun: "deals", kind: "deal", newLabel: "New deal", href: r => `#/deals/${r.id}`,
+    rows: () => S.deals, cols: [
+      { key: "name", label: "Name", val: r => r.name, cls: "strong" },
+      { key: "org", label: "Organization", val: r => org(r.orgId)?.name ?? "" },
+      { key: "contact", label: "Contact", val: r => contact(r.contactId)?.name ?? "" },
+      { key: "stage", label: "Stage", val: r => STAGES.indexOf(ST[r.stage]), text: r => ST[r.stage].name, html: r => stageTag(r.stage) },
+      { key: "value", label: "Value", num: true, val: r => r.value, html: r => money(r.value) },
+      { key: "prob", label: "Probability", num: true, val: r => r.prob, html: r => r.prob + "%" },
+      { key: "exp", label: "Expected", num: true, val: r => expected(r), html: r => money(expected(r)) },
+      { key: "close", label: "Close date", val: r => r.close ?? "", html: r => `<span class="date-cell"><span class="mono" style="font-size:13px">${fmtD(r.close)}</span>${isLate(r) ? lateTag : ""}</span>` },
+    ] },
+};
+
+function tableRows(name) {
+  const t = TABLES[name], st = TS[name], q = st.q.trim().toLowerCase();
+  let rows = t.rows();
+  if (t.filter && st.status !== "all") rows = rows.filter(r => r.status === st.status);
+  if (q) rows = rows.filter(r => t.cols.some(c => String(c.text ? c.text(r) : c.val(r) ?? "").toLowerCase().includes(q)));
+  const col = t.cols.find(c => c.key === st.key);
+  return [...rows].sort((a, b) => { const x = col.val(a), y = col.val(b);
+    if (x === "" || x == null) return 1; if (y === "" || y == null) return -1;
+    return (typeof x === "number" ? x - y : String(x).localeCompare(String(y))) * st.dir; });
+}
+function tableBody(name) {
+  const t = TABLES[name], st = TS[name], rows = tableRows(name);
+  if (!rows.length) return `<tr><td class="empty" colspan="${t.cols.length + 1}">${st.q ? `No ${t.noun} match ‘${esc(st.q)}’.` : `No ${t.noun} yet.`}</td></tr>`;
+  return rows.map(r => `<tr data-href="${t.href(r)}" tabindex="0">${t.cols.map(c => `<td class="${c.num ? "num" : ""} ${c.cls ?? ""}">${c.html ? c.html(r) : esc(c.val(r))}</td>`).join("")}${rowActs(t.kind, r.id)}</tr>`).join("");
+}
+function viewTable(name) {
+  CUR = name;
+  const t = TABLES[name], st = TS[name];
+  const filter = t.filter ? `<div class="seg" role="group" aria-label="Filter by status">${[["all", "All"], ...STATUSES].map(([k, l]) =>
+    `<button class="${st.status === k ? "on" : ""}" data-action="filter" data-status="${k}">${l}<span class="n">${k === "all" ? S.contacts.length : S.contacts.filter(c => c.status === k).length}</span></button>`).join("")}</div>` : "";
+  const html = `
+    <div class="page-head"><h1 class="page-title">${t.title}</h1>
+      <button class="btn btn-primary" data-action="new-${t.kind}"><i data-lucide="plus"></i>${t.newLabel}</button></div>
+    <div class="panel"><div class="toolbar"><label class="search"><i data-lucide="search"></i>
+        <input id="q" type="search" placeholder="Search ${t.noun}" value="${esc(st.q)}" aria-label="Search ${t.noun}"></label>${filter}
+        <span class="count-note" id="count"></span></div>
+      <table class="dt"><thead><tr>${t.cols.map(c => `<th class="${c.num ? "num" : ""}" aria-sort="${st.key === c.key ? (st.dir > 0 ? "ascending" : "descending") : "none"}">
+        <button data-action="sort" data-key="${c.key}">${c.label}${st.key === c.key ? `<i data-lucide="${st.dir > 0 ? "arrow-up" : "arrow-down"}"></i>` : ""}</button></th>`).join("")}<th><span class="sr-only"></span></th></tr></thead>
+      <tbody id="tb">${tableBody(name)}</tbody></table></div>`;
+  return { html, after: () => updateCount(name) };
+}
+function updateCount(name) { const n = tableRows(name).length, all = TABLES[name].rows().length; $("#count").textContent = n === all ? plural(all, TABLES[name].noun.slice(0, -1)) : `${n} of ${all}`; }
+
+// ---------- Record pages ----------
+const missing = (what, back) => ({ html: `<div class="panel"><p>This ${what} doesn't exist any more.</p><a href="#/${back}">Back to ${back}</a></div>` });
+const crumb = (href, label) => `<a class="crumb" href="${href}"><i data-lucide="chevron-left"></i>${label}</a>`;
+const headActs = (kind, id, extra = "") => `<div class="head-acts">${extra}
+  <button class="btn btn-secondary" data-action="edit-${kind}" data-id="${id}"><i data-lucide="pencil"></i>Edit</button>
+  <button class="btn btn-secondary" data-action="del-${kind}" data-id="${id}"><i data-lucide="trash-2"></i>Delete</button></div>`;
+
+function viewOrg(id) {
+  const o = org(id); if (!o) return missing("organization", "organizations");
+  const cs = S.contacts.filter(c => c.orgId === id).sort((a, b) => a.name.localeCompare(b.name));
+  const ds = S.deals.filter(d => d.orgId === id).sort((a, b) => (isOpen(b) - isOpen(a)) || (a.close ?? "").localeCompare(b.close ?? ""));
+  const acts = S.acts.filter(a => cs.some(c => c.id === a.contactId) || ds.some(d => d.id === a.dealId));
+  const openDs = ds.filter(isOpen), wonDs = ds.filter(d => d.stage === "won");
+  return { html: `${crumb("#/organizations", "Organizations")}
+    <div class="rec-head"><div><h1 class="page-title">${esc(o.name)}</h1><div class="facts">${o.industry ? `<span class="tag tag-quiet">${esc(o.industry)}</span>` : ""}</div></div>${headActs("org", id)}</div>
+    <div class="figs"><div class="panel"><span class="label">Open deals</span><span class="mono">${openDs.length}</span></div>
+      <div class="panel"><span class="label">Open value</span><span class="mono">${money(openDs.reduce((a, d) => a + d.value, 0))}</span></div>
+      <div class="panel"><span class="label">Expected revenue</span><span class="mono">${money(openDs.reduce((a, d) => a + expected(d), 0))}</span></div>
+      <div class="panel"><span class="label">Revenue won</span><span class="mono">${money(wonDs.reduce((a, d) => a + d.value, 0))}</span></div></div>
+    <div class="rec-grid"><div class="stack-col">
+      <div class="panel"><div class="panel-head"><h2 class="section-title">Details</h2></div><dl class="details">
+        <dt>Website</dt><dd>${o.website ? `<a href="${esc(websiteHref(o.website))}" target="_blank" rel="noopener">${esc(o.website)}</a>` : "—"}</dd>
+        <dt>Industry</dt><dd>${esc(o.industry) || "—"}</dd><dt>Notes</dt><dd>${esc(o.notes) || "—"}</dd></dl></div>
+      <div class="panel"><div class="panel-head"><h2 class="section-title">Contacts <span class="faint mono" style="font-size:14px">${cs.length}</span></h2>
+        <button class="btn btn-secondary" data-action="new-contact" data-org="${id}"><i data-lucide="plus"></i>New contact</button></div>
+        ${cs.map(c => `<div class="list-row"><div><a href="#/contacts/${c.id}">${esc(c.name)}</a><div class="sub">${esc(c.title)}</div></div>${statusTag(c.status)}</div>`).join("") || `<p class="empty-note">No contacts yet.</p>`}</div>
+      <div class="panel"><div class="panel-head"><h2 class="section-title">Deals <span class="faint mono" style="font-size:14px">${ds.length}</span></h2>
+        <button class="btn btn-secondary" data-action="new-deal" data-org="${id}"><i data-lucide="plus"></i>New deal</button></div>
+        ${ds.map(d => `<div class="list-row"><div><a href="#/deals/${d.id}">${esc(d.name)}</a><div class="sub"><span class="mono">${money(d.value)}</span> · ${fmtD(d.close)} ${isLate(d) ? lateTag : ""}</div></div>${stageTag(d.stage)}</div>`).join("") || `<p class="empty-note">No deals yet.</p>`}</div>
+    </div>
+    <div class="panel"><div class="panel-head"><h2 class="section-title">Timeline</h2><span class="label">All contacts and deals, newest first</span></div>${timeline(acts, "org")}</div></div>` };
+}
+
+function viewContact(id) {
+  const c = contact(id); if (!c) return missing("contact", "contacts");
+  const ds = S.deals.filter(d => d.contactId === id);
+  return { html: `${crumb("#/contacts", "Contacts")}
+    <div class="rec-head"><div><h1 class="page-title">${esc(c.name)}</h1><div class="facts">${statusTag(c.status)}<span class="muted">${esc(c.title)}${c.title && c.orgId ? " at " : ""}</span>${c.orgId ? orgLink(c.orgId) : ""}</div></div>
+      ${headActs("contact", id, `<button class="btn btn-primary" data-action="log" data-contact="${id}"><i data-lucide="plus"></i>Log activity</button>`)}</div>
+    <div class="rec-grid"><div class="stack-col">
+      <div class="panel"><div class="panel-head"><h2 class="section-title">Details</h2></div><dl class="details">
+        <dt>Email</dt><dd>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : "—"}</dd>
+        <dt>Phone</dt><dd class="mono">${esc(c.phone) || "—"}</dd><dt>Job title</dt><dd>${esc(c.title) || "—"}</dd>
+        <dt>Organization</dt><dd>${orgLink(c.orgId)}</dd><dt>Status</dt><dd>${statusTag(c.status)}</dd></dl></div>
+      <div class="panel"><div class="panel-head"><h2 class="section-title">Deals <span class="faint mono" style="font-size:14px">${ds.length}</span></h2>
+        <button class="btn btn-secondary" data-action="new-deal" data-contact="${id}" data-org="${c.orgId ?? ""}"><i data-lucide="plus"></i>New deal</button></div>
+        ${ds.map(d => `<div class="list-row"><div><a href="#/deals/${d.id}">${esc(d.name)}</a><div class="sub"><span class="mono">${money(d.value)}</span> · ${fmtD(d.close)} ${isLate(d) ? lateTag : ""}</div></div>${stageTag(d.stage)}</div>`).join("") || `<p class="empty-note">No deals yet.</p>`}</div>
+    </div>
+    <div class="panel"><div class="panel-head"><h2 class="section-title">Timeline</h2><span class="label">Newest first</span></div>${timeline(S.acts.filter(a => a.contactId === id), "contact")}</div></div>` };
+}
+
+function viewDeal(id) {
+  const d = deal(id); if (!d) return missing("deal", "deals");
+  return { html: `${crumb("#/deals", "Deals")}
+    <div class="rec-head"><div><h1 class="page-title">${esc(d.name)}</h1><div class="facts">${stageTag(d.stage)}${isLate(d) ? lateTag : ""}${d.orgId ? orgLink(d.orgId) : ""}</div></div>
+      ${headActs("deal", id, `<button class="btn btn-primary" data-action="log" data-deal="${id}"><i data-lucide="plus"></i>Log activity</button>`)}</div>
+    <div class="panel" style="margin-bottom:16px;display:flex;align-items:center;gap:16px"><span class="label">Stage</span>
+      <div class="seg" role="group" aria-label="Change stage">${STAGES.map(s => `<button class="${d.stage === s.key ? "on" : ""}" data-action="set-stage" data-id="${id}" data-stage="${s.key}" ${d.stage === s.key ? 'aria-pressed="true"' : ""}><i class="dot" style="background:${s.color}"></i>${s.name}</button>`).join("")}</div></div>
+    <div class="figs"><div class="panel"><span class="label">Value</span><span class="mono">${money(d.value)}</span></div>
+      <div class="panel"><span class="label">Probability of close</span><span class="mono">${d.prob}%</span></div>
+      <div class="panel"><span class="label">Expected revenue</span><span class="mono">${money(expected(d))}</span></div>
+      <div class="panel"><span class="label">${isOpen(d) ? "Expected close" : "Closed"}</span><span class="mono" style="${isLate(d) ? "color:var(--raspberry-ink)" : ""}">${fmtD(d.close)}</span></div></div>
+    <div class="rec-grid"><div class="stack-col">
+      <div class="panel"><div class="panel-head"><h2 class="section-title">Details</h2></div><dl class="details">
+        <dt>Organization</dt><dd>${orgLink(d.orgId)}</dd><dt>Main contact</dt><dd>${contactLink(d.contactId)}</dd>
+        <dt>Stage</dt><dd>${stageTag(d.stage)}</dd><dt>Value</dt><dd class="mono">${money(d.value)}</dd>
+        <dt>Probability</dt><dd class="mono">${d.prob}%${d.prob !== ST[d.stage].prob ? ` <span class="faint" style="font-family:var(--font-sans);font-size:12px">set by hand</span>` : ""}</dd>
+        <dt>Close date</dt><dd><span class="mono">${fmtD(d.close)}</span> ${isLate(d) ? lateTag : ""}</dd></dl></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h2 class="section-title">Timeline</h2><span class="label">Newest first</span></div>${timeline(S.acts.filter(a => a.dealId === id), "deal")}</div></div>` };
+}
+
+// ---------- Dialogs ----------
+const dlg = $("#dlg");
+const opt = (v, l, sel) => `<option value="${esc(v)}" ${String(sel ?? "") === String(v) ? "selected" : ""}>${esc(l)}</option>`;
+function fieldHtml(f, v) {
+  const id = "f-" + f.name, req = f.required ? " *" : "";
+  let input;
+  if (f.type === "select") input = `<select id="${id}" name="${f.name}">${f.options.map(([ov, ol]) => opt(ov, ol, v)).join("")}</select>`;
+  else if (f.type === "textarea") input = `<textarea id="${id}" name="${f.name}">${esc(v)}</textarea>`;
+  else if (f.type === "checkbox") return `<label class="check-field"><input type="checkbox" class="checkbox" name="${f.name}" ${v ? "checked" : ""}>${f.label}</label>`;
+  else input = `<input id="${id}" name="${f.name}" type="${f.type === "datetime" ? "datetime-local" : f.type || "text"}" value="${esc(v)}" ${f.type === "number" ? `min="${f.min ?? 0}" ${f.max != null ? `max="${f.max}"` : ""} step="1"` : ""}>`;
+  return `<div class="field ${f.half ? "half" : ""}" data-field="${f.name}"><label for="${id}">${f.label}${req}</label>${input}${f.hint ? `<span class="hint">${f.hint}</span>` : ""}<span class="err"></span></div>`;
+}
+function readForm(form, fields) {
+  const v = {};
+  fields.forEach(f => { const el = form.elements[f.name]; if (!el) return;
+    if (f.type === "checkbox") v[f.name] = el.checked;
+    else if (f.type === "number") v[f.name] = el.value.trim() === "" ? null : Number(el.value);
+    else if (f.ref) v[f.name] = el.value ? Number(el.value) : null;
+    else v[f.name] = el.value.trim(); });
+  return v;
+}
+function validate(fields, v) {
+  const e = {};
+  fields.forEach(f => { const x = v[f.name];
+    if (f.required && (x == null || x === "")) e[f.name] = `${f.label} is required`;
+    else if (f.type === "email" && x && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)) e[f.name] = "Enter an email like name@company.com";
+    else if (f.type === "number" && x != null && (!Number.isInteger(x) || x < (f.min ?? 0) || (f.max != null && x > f.max)))
+      e[f.name] = f.max != null ? `Enter a whole number from ${f.min ?? 0} to ${f.max}` : "Enter a whole number, 0 or more"; });
+  return e;
+}
+function openForm({ title, fields, values = {}, submit = "Save", onSubmit, onChange }) {
+  dlg.innerHTML = `<form novalidate><div class="dlg-head"><h2 class="section-title" id="dlg-title">${esc(title)}</h2>
+      <button type="button" class="btn btn-ghost" data-close aria-label="Close"><i data-lucide="x"></i></button></div>
+    <div class="dlg-body">${fields.map(f => fieldHtml(f, values[f.name])).join("")}</div>
+    <div class="dlg-foot"><button type="button" class="btn btn-secondary" data-close>Cancel</button><button class="btn btn-primary" type="submit">${esc(submit)}</button></div></form>`;
+  const form = dlg.querySelector("form");
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const v = readForm(form, fields), errs = validate(fields, v);
+    form.querySelectorAll(".field").forEach(el => { const m = errs[el.dataset.field]; el.classList.toggle("invalid", !!m); el.querySelector(".err").textContent = m || ""; });
+    if (Object.keys(errs).length) { form.querySelector(".invalid input, .invalid textarea, .invalid select")?.focus(); return; }
+    const msg = onSubmit(v);
+    dlg.close(); save(); route(); if (msg) toast(msg);
+  });
+  if (onChange) form.addEventListener("change", e => onChange(form, e.target.name));
+  icons(); dlg.showModal();
+  form.querySelector("input:not([type=checkbox]), select, textarea")?.focus();
+}
+function openConfirm({ title, body, label, onConfirm }) {
+  dlg.innerHTML = `<div class="dlg-head"><h2 class="section-title" id="dlg-title">${esc(title)}</h2></div><p class="dlg-text">${body}</p>
+    <div class="dlg-foot"><button class="btn btn-secondary" data-close>Cancel</button><button class="btn btn-danger" id="ok">${esc(label)}</button></div>`;
+  $("#ok").addEventListener("click", () => { const msg = onConfirm(); dlg.close(); save(); route(); toast(msg); });
+  dlg.showModal(); dlg.querySelector("[data-close]").focus();
+}
+dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest("[data-close]")) dlg.close(); });
+
+// Forms
+const orgOptions = () => [["", "None"], ...[...S.orgs].sort((a, b) => a.name.localeCompare(b.name)).map(o => [o.id, o.name])];
+const contactOptions = orgId => [["", "None"], ...S.contacts.filter(c => !orgId || c.orgId === orgId).sort((a, b) => a.name.localeCompare(b.name)).map(c => [c.id, c.name])];
+
+function orgForm(o) {
+  openForm({ title: o ? "Edit organization" : "New organization", submit: o ? "Save" : "Add organization", values: o ?? {},
+    fields: [{ name: "name", label: "Name", required: true }, { name: "website", label: "Website", half: true, hint: "For example acme.com" },
+      { name: "industry", label: "Industry", half: true }, { name: "notes", label: "Notes", type: "textarea" }],
+    onSubmit: v => { if (o) { Object.assign(o, v); return "Organization saved"; }
+      const n = { id: S.next++, ...v }; S.orgs.push(n); location.hash = `#/organizations/${n.id}`; return "Organization added"; } });
+}
+function contactForm(c, preset = {}) {
+  openForm({ title: c ? "Edit contact" : "New contact", submit: c ? "Save" : "Add contact", values: c ?? { status: "lead", ...preset },
+    fields: [{ name: "name", label: "Name", required: true }, { name: "email", label: "Email", type: "email", half: true },
+      { name: "phone", label: "Phone", half: true }, { name: "title", label: "Job title", half: true },
+      { name: "orgId", label: "Organization", type: "select", ref: true, half: true, options: orgOptions() },
+      { name: "status", label: "Status", type: "select", options: STATUSES }],
+    onSubmit: v => { if (c) { Object.assign(c, v); return "Contact saved"; }
+      const n = { id: S.next++, ...v }; S.contacts.push(n); if (!preset.orgId) location.hash = `#/contacts/${n.id}`; return "Contact added"; } });
+}
+function dealForm(d, preset = {}) {
+  const values = d ? { ...d } : { stage: "new", prob: ST[preset.stage || "new"].prob, ...preset };
+  openForm({ title: d ? "Edit deal" : preset.stage ? `New deal in ${ST[preset.stage].name}` : "New deal", submit: d ? "Save" : "Add deal", values,
+    fields: [{ name: "name", label: "Name", required: true },
+      { name: "orgId", label: "Organization", type: "select", ref: true, half: true, options: orgOptions() },
+      { name: "contactId", label: "Main contact", type: "select", ref: true, half: true, options: contactOptions(values.orgId) },
+      { name: "stage", label: "Stage", type: "select", half: true, options: STAGES.map(s => [s.key, s.name]) },
+      { name: "value", label: "Value (US dollars)", type: "number", required: true, half: true },
+      { name: "prob", label: "Probability of close (%)", type: "number", max: 100, half: true, hint: "Changes with the stage" },
+      { name: "close", label: "Close date", type: "date", half: true }],
+    onChange: (form, name) => {
+      if (name === "stage") form.elements.prob.value = ST[form.elements.stage.value].prob;
+      if (name === "orgId") { const oid = form.elements.orgId.value ? +form.elements.orgId.value : null, sel = form.elements.contactId.value;
+        form.elements.contactId.innerHTML = contactOptions(oid).map(([v, l]) => opt(v, l, sel)).join(""); }
+      if (name === "contactId" && !form.elements.orgId.value) { const c = contact(+form.elements.contactId.value);
+        if (c?.orgId) form.elements.orgId.value = c.orgId; }
+    },
+    onSubmit: v => {
+      if (v.prob == null) v.prob = ST[v.stage].prob;
+      if (!v.close) v.close = null;
+      if (d) {
+        const { stage, prob, ...rest } = v; Object.assign(d, rest);
+        if (stage !== d.stage) moveDeal(d.id, stage, 0, prob); else d.prob = prob;
+        return "Deal saved";
+      }
+      S.deals.filter(x => x.stage === v.stage).forEach(x => x.pos++);
+      const n = { id: S.next++, ...v, pos: 0 };
+      if (v.stage === "won" || v.stage === "lost") n.close = n.close || todayIso();
+      S.deals.push(n);
+      if (!preset.stage && !preset.orgId && !preset.contactId) location.hash = `#/deals/${n.id}`;
+      return "Deal added";
+    } });
+}
+function actForm(a, ctx = {}) {
+  const fields = [{ name: "type", label: "Type", type: "select", half: true, options: TYPES },
+    { name: "at", label: "Date and time", type: "datetime", required: true, half: true },
+    { name: "desc", label: "Description", type: "textarea", required: true }];
+  if (!a && ctx.contactId) fields.push({ name: "dealId", label: "Deal", type: "select", ref: true, options: [["", "None"], ...S.deals.filter(d => d.contactId === ctx.contactId).map(d => [d.id, d.name])] });
+  fields.push({ name: "followUp", label: "Follow-up date", type: "date", half: true, hint: "Optional. Shows on the dashboard until done." });
+  if (a) fields.push({ name: "done", label: "Follow-up done", type: "checkbox" });
+  openForm({ title: a ? "Edit activity" : "Log activity", submit: a ? "Save" : "Log activity", values: a ?? { type: "note", at: nowLocal() }, fields,
+    onSubmit: v => {
+      v.followUp = v.followUp || null;
+      if (a) { Object.assign(a, v); if (!a.followUp) a.done = false; return "Activity saved"; }
+      const dl = ctx.dealId ? deal(ctx.dealId) : null;
+      S.acts.push({ id: S.next++, ...v, done: false, dealId: dl ? dl.id : v.dealId ?? null, contactId: dl ? dl.contactId : ctx.contactId });
+      return v.followUp ? "Activity logged with a follow-up" : "Activity logged";
+    } });
+}
+
+// ---------- Actions ----------
+const ACTIONS = {
+  "new-org": () => orgForm(),
+  "edit-org": ds => orgForm(org(+ds.id)),
+  "del-org": ds => { const o = org(+ds.id), n = orgImpact(o);
+    openConfirm({ title: `Delete ${o.name}?`, label: "Delete organization",
+      body: `${n.contacts || n.deals ? `Its ${plural(n.contacts, "contact")} and ${plural(n.deals, "deal")} will be kept, with no organization.` : "Nothing else is linked to it."} This can't be undone.`,
+      onConfirm: () => { deleteOrg(o); if (location.hash.startsWith("#/organizations/")) location.hash = "#/organizations"; return "Organization deleted"; } }); },
+  "new-contact": ds => contactForm(null, ds.org ? { orgId: +ds.org } : {}),
+  "edit-contact": ds => contactForm(contact(+ds.id)),
+  "del-contact": ds => { const c = contact(+ds.id), n = contactImpact(c), parts = [];
+    if (n.deals) parts.push(`Their ${plural(n.deals, "deal")} will be kept, with no main contact.`);
+    if (n.gone) parts.push(`${plural(n.gone, "activity").replace("activitys", "activities")} linked only to them will be deleted.`);
+    if (n.kept) parts.push(`${plural(n.kept, "activity").replace("activitys", "activities")} also linked to a deal will stay with the deal.`);
+    openConfirm({ title: `Delete ${c.name}?`, label: "Delete contact", body: `${parts.join(" ") || "Nothing else is linked to them."} This can't be undone.`,
+      onConfirm: () => { deleteContact(c); if (location.hash.startsWith("#/contacts/")) location.hash = "#/contacts"; return "Contact deleted"; } }); },
+  "new-deal": ds => dealForm(null, { ...(ds.stage ? { stage: ds.stage, prob: ST[ds.stage].prob } : {}), ...(ds.org ? { orgId: +ds.org } : {}), ...(ds.contact ? { contactId: +ds.contact } : {}) }),
+  "edit-deal": ds => dealForm(deal(+ds.id)),
+  "del-deal": ds => { const d = deal(+ds.id), n = dealImpact(d), parts = [];
+    if (n.gone) parts.push(`Its ${n.gone} timeline ${n.gone === 1 ? "entry" : "entries"} will be deleted.`);
+    if (n.kept) parts.push(`${plural(n.kept, "activity").replace("activitys", "activities")} also linked to a contact will stay with the contact.`);
+    openConfirm({ title: `Delete ${d.name}?`, label: "Delete deal", body: `${parts.join(" ") || "Nothing else is linked to it."} This can't be undone.`,
+      onConfirm: () => { deleteDeal(d); if (location.hash.startsWith("#/deals/")) location.hash = "#/deals"; return "Deal deleted"; } }); },
+  "set-stage": ds => { const d = deal(+ds.id); if (d.stage === ds.stage) return; moveDeal(d.id, ds.stage, 0); route();
+    toast(`Moved to ${ST[ds.stage].name}${ds.stage === "won" || ds.stage === "lost" ? ". Close date set to today" : ""}`); },
+  "log": ds => actForm(null, { dealId: ds.deal ? +ds.deal : null, contactId: ds.contact ? +ds.contact : null }),
+  "edit-act": ds => actForm(S.acts.find(a => a.id === +ds.id)),
+  "del-act": ds => { const a = S.acts.find(x => x.id === +ds.id);
+    openConfirm({ title: "Delete this activity?", label: "Delete activity", body: `“${esc(a.desc)}” will be removed from every timeline. This can't be undone.`,
+      onConfirm: () => { S.acts = S.acts.filter(x => x !== a); return "Activity deleted"; } }); },
+  "sort": ds => { const st = TS[CUR]; if (st.key === ds.key) st.dir *= -1; else { st.key = ds.key; st.dir = 1; } route(); },
+  "filter": ds => { TS.contacts.status = ds.status; route(); },
+  "reset": () => openConfirm({ title: "Reset to sample data?", label: "Reset data",
+    body: "Every change you've made in this prototype will be replaced by the sample data. This can't be undone.",
+    onConfirm: () => { S = seed(); return "Sample data restored"; } }),
+};
+
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-action]");
+  if (a) { e.preventDefault(); e.stopPropagation(); ACTIONS[a.dataset.action]?.(a.dataset); return; }
+  if (e.target.closest("a, input, button, label")) return;
+  const row = e.target.closest("[data-href]");
+  if (row) location.hash = row.dataset.href;
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.matches("[data-href]")) location.hash = e.target.dataset.href;
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "q" && CUR) { TS[CUR].q = e.target.value; $("#tb").innerHTML = tableBody(CUR); updateCount(CUR); icons(); }
+});
+document.addEventListener("change", e => {
+  const id = e.target.dataset?.toggle;
+  if (!id) return;
+  const a = S.acts.find(x => x.id === +id); a.done = e.target.checked; save();
+  toast(a.done ? "Follow-up marked done" : "Follow-up reopened");
+  setTimeout(route, 250);
+});
+
+function toast(msg) {
+  const el = document.createElement("div");
+  el.className = "toast-item"; el.innerHTML = `<i data-lucide="circle-check"></i>${esc(msg)}`;
+  $("#toasts").appendChild(el); icons();
+  setTimeout(() => el.remove(), 2600);
+}
+
+// ---------- Router ----------
+function route() {
+  const [sec = "dashboard", rawId] = location.hash.replace(/^#\/?/, "").split("/");
+  const section = ["dashboard", "pipeline", "deals", "organizations", "contacts"].includes(sec) ? sec : "dashboard";
+  const id = rawId ? Number(rawId) : null;
+  CUR = null;
+  renderSidebar(section);
+  let v;
+  if (id && section === "organizations") v = viewOrg(id);
+  else if (id && section === "contacts") v = viewContact(id);
+  else if (id && section === "deals") v = viewDeal(id);
+  else if (section === "pipeline") v = viewPipeline();
+  else if (["deals", "organizations", "contacts"].includes(section)) v = viewTable(section);
+  else v = viewDashboard();
+  $("#main").innerHTML = v.html;
+  icons();
+  v.after?.();
+  const titles = { dashboard: "Dashboard", pipeline: "Pipeline", deals: "Deals", organizations: "Organizations", contacts: "Contacts" };
+  document.title = `${titles[section]} · Accountable`;
+}
+window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
+route();
+</script>
+</body>
+</html>
