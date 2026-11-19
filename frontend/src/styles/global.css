@@ -184,3 +184,20 @@ tr:hover .row-acts, tr:focus-within .row-acts { opacity: 1; }
 
 .loading { color: var(--ink-muted); padding: 24px 0; }
 .error-note { color: var(--raspberry-ink); padding: 24px 0; }
+
+/* ---- Record pages ---- */
+.crumb { font-size: 13px; margin-bottom: 4px; display: inline-flex; align-items: center; gap: 4px; }
+.rec-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.facts { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+.head-acts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.stage-select { width: 150px; }
+.rec-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 16px; align-items: start; }
+.stack-col { display: grid; gap: 16px; }
+dl.details { display: grid; gap: 12px; margin: 0; }
+.details-row { display: grid; grid-template-columns: 130px 1fr; gap: 16px; }
+dl.details dt { color: var(--ink-muted); font-size: 13px; }
+dl.details dd { margin: 0; overflow-wrap: anywhere; }
+.list-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--divider); gap: 12px; }
+.list-row:first-of-type { border-top: 0; padding-top: 0; }
+.list-row .sub { font-size: 12px; color: var(--ink-muted); display: flex; gap: 8px; align-items: center; }
+.panel-head + .list-row { border-top: 0; padding-top: 0; }

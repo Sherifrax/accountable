@@ -72,3 +72,13 @@ export function monthLabel(key: string, style: "short" | "long" = "short"): stri
   const d = parseISO(`${key}-01`);
   return style === "short" ? format(d, "MMM") : format(d, "MMMM yyyy");
 }
+
+/** Websites are stored as typed and linked with `https://` added if there is no scheme (R-DATA-9). */
+export function websiteUrl(site: string): string {
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(site) ? site : `https://${site}`;
+}
+
+/** Turns "$12,500" or "12 500" into "12500" for validation and sending. */
+export function cleanNumber(text: string): string {
+  return text.replace(/[$,\s]/g, "");
+}
