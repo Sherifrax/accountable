@@ -77,3 +77,5 @@ Thumbs.db
 logs/
 *.log
 tmp/
+e2e/.data/
+e2e/results/

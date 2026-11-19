@@ -1,6 +1,36 @@
-The project has not yet started.
+# Status
 
-- `docs/intent.md` was refined after an interview. It now covers what deleting does to linked records, which fields are required, each stage's usual probability, the close date on Won or Lost, activities that show on both a deal and its contact, the organization timeline, Won and Lost on the board, and how much sample data there is.
-- `docs/spec.md` was written. It has the requirements, architecture, API, data model and design for the MVP, with open concerns listed at the top.
-- `docs/mockups/prototype.html` is a clickable prototype of the whole MVP: every section, record pages, forms, delete rules, drag and drop on the pipeline, and follow-ups. It runs in the browser only, with data kept in the browser, and isn't the real app.
-- `docs/plan.md` was written. It lists the files that change, the order of work in eight phases (0 to 7, backend first), the risks, and the unit and end-to-end tests that prove each part. No code has been written yet.
+Work follows `docs/plan.md`. Done so far: phases 0, 1 and 2 (skeleton, backend rules, sample data and dashboard figures).
+
+## Prerequisites (one time)
+
+- Node 24 or later (Node 26 is installed here with `brew install node`)
+- [uv](https://docs.astral.sh/uv/) (it fetches Python 3.12 itself on first use)
+- Google Chrome, for the end-to-end tests
+- An internet connection for the first install only. After that the app works offline.
+
+Then, once, from the repo root:
+
+```
+npm install
+```
+
+## Run, reset, test
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Starts the backend (http://localhost:8000) and the frontend. Open http://localhost:5173. The first start creates `data/accountable.db` and fills it with sample data. |
+| `npm run seed` | Resets the data to the sample data. Safe while the app is running. |
+| `npm test` | Vitest, then pytest, then Playwright; stops at the first failure. Tests use their own database (temporary files for pytest, `e2e/.data/e2e.db` on ports 8001 and 5174 for Playwright), never `data/accountable.db`. |
+| `npm run test:front`, `test:back`, `test:e2e` | One kind of test at a time. |
+
+## What exists
+
+- **Backend** (`backend/`): the whole API from spec 3.3 and every data rule. 81 pytest tests cover them, including stage and probability rules, moving and renumbering, delete rules and impact counts, timelines, dashboard figures with a fixed "today", and the sample data.
+- **Frontend** (`frontend/`): Vite, React and TypeScript skeleton that shows the stage names from `/api/stages`. The real screens are phases 3 to 6.
+- **End to end** (`e2e/`): Playwright config, a fixture that reseeds before each test and fails on any console error or warning, and one smoke test.
+- `docs/mockups/prototype.html` stays as the visual reference.
+
+## Later ideas (not in the spec)
+
+None yet.
