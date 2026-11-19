@@ -1,22 +1,25 @@
-import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppShell } from "./components/AppShell";
+import { PageHeader } from "./components/PageHeader";
 
-type Stage = { name: string; probability: number; open: boolean };
+function Soon({ title }: { title: string }) {
+  return <PageHeader title={title} />;
+}
 
 export function App() {
-  const [stages, setStages] = useState<Stage[]>([]);
-  useEffect(() => {
-    fetch("/api/stages")
-      .then((r) => r.json())
-      .then(setStages);
-  }, []);
   return (
-    <main>
-      <h1>Accountable</h1>
-      <ul aria-label="Stages">
-        {stages.map((s) => (
-          <li key={s.name}>{s.name}</li>
-        ))}
-      </ul>
-    </main>
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route index element={<Soon title="Dashboard" />} />
+        <Route path="pipeline" element={<Soon title="Pipeline" />} />
+        <Route path="deals" element={<Soon title="Deals" />} />
+        <Route path="deals/:id" element={<Soon title="Deal" />} />
+        <Route path="organizations" element={<Soon title="Organizations" />} />
+        <Route path="organizations/:id" element={<Soon title="Organization" />} />
+        <Route path="contacts" element={<Soon title="Contacts" />} />
+        <Route path="contacts/:id" element={<Soon title="Contact" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }

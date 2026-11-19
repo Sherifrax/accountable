@@ -1,9 +1,13 @@
 import { expect, test } from "./fixtures";
 
-test("the app loads and shows the stages from the backend", async ({ page }) => {
+test("the app loads with its sidebar, and the backend answers through the proxy", async ({ page, request }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Accountable" })).toBeVisible();
-  await expect(page.getByRole("list", { name: "Stages" }).getByRole("listitem")).toHaveText([
+  await expect(page.getByText("Accountable", { exact: true })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link")).toHaveText([
+    "Dashboard", "Pipeline", "Deals", "Organizations", "Contacts",
+  ]);
+  const stages = await request.get("/api/stages");
+  expect((await stages.json()).map((s: { name: string }) => s.name)).toEqual([
     "New", "Qualified", "Proposal", "Negotiation", "Won", "Lost",
   ]);
 });
