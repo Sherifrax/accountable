@@ -41,7 +41,7 @@ Running `npm install` also sets up git hooks through lefthook (`lefthook.yml`): 
 - **Frontend** (`frontend/`): app shell, brand tokens and bundled fonts, typed API layer, shared components, the Organizations, Contacts and Deals tables, record pages, forms with validation, delete confirmations with counts, and activity logging with follow-ups. The Pipeline board has drag and drop (mouse and keyboard) with optimistic moves. The Dashboard has four tiles, a revenue line chart, a won and lost bar chart, the funnel with the open-pipeline stack, follow-ups with done checkboxes, and recent activity.
 - **End to end** (`e2e/`): Playwright config, a fixture that reseeds before each test and fails on any console error or warning, and a smoke test, `02-records.spec.ts` (add, search, sort, edit, restart, delete, reset) and `03-links.spec.ts` (status filter, linked records, timelines) `05-activities.spec.ts`, `06-dashboard.spec.ts`, `07-look.spec.ts` (charts, fonts, colors, no sideways overflow at 1280 and 1440px, screenshots in `e2e/results/screenshots/`, git-ignored), `01-start.spec.ts` (dashboard first, every section, nothing leaves localhost) and `04-pipeline.spec.ts` (drag, totals, Won, order after refresh, keyboard, "+", late tags, server failure).
 - `docs/mockups/prototype.html` stays as the visual reference.
-- **Project subagents** (`.claude/agents/`, both on Sonnet): `reviewer` reviews a branch against `docs/REVIEW.md` and reports by severity, and only reads (no edits, no state-changing git). `ui-check` opens each page of the running app through the Playwright MCP server, screenshots it to `.playwright-mcp/` (git-ignored), and checks it against the brand skill and `docs/spec.md`. It changes no code and submits no forms. `docs/REVIEW.md` does not exist yet; the reviewer falls back to a default checklist until it does.
+- **Project subagents** (`.claude/agents/`, both on Sonnet): `reviewer` reviews a branch against `docs/REVIEW.md` and reports by severity, and only reads (no edits, no state-changing git). `ui-check` opens each page of the running app through the Playwright MCP server, screenshots it to `.playwright-mcp/` (git-ignored), and checks it against the brand skill and the spec (`docs/spec.md` and the area files in `docs/specs/`). It changes no code and submits no forms. `docs/REVIEW.md` holds the review standard; so far it has only the spec checks.
 
 ## What was checked, and what still needs a person
 
@@ -63,3 +63,7 @@ None yet.
 - Styles are plain CSS in `frontend/src/styles/` (tokens, then one global stylesheet) rather than a CSS Module per component.
 - TanStack Table is pinned to v8 (the v9 API is different).
 - Every change refreshes the four query families (organizations, contacts, deals, dashboard) instead of a hand-written map of which query each change touches. The lists are small and only the screens on view are fetched again.
+
+## Spec layout
+
+`docs/spec.md` is now a short summary with an index. The requirements, architecture and design moved, unchanged, into one file per product area in `docs/specs/`. References like "spec 3.3" or "spec 4.2" point at `docs/specs/architecture.md` and `docs/specs/design.md`, where the section numbers are kept.
