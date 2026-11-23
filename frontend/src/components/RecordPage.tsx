@@ -2,7 +2,17 @@ import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-export function RecordHeader({ crumb, title, facts, actions }: { crumb: { to: string; label: string }; title: string; facts?: ReactNode; actions?: ReactNode }) {
+export function RecordHeader({
+  crumb,
+  title,
+  facts,
+  actions,
+}: {
+  crumb: { to: string; label: string };
+  title: string;
+  facts?: ReactNode;
+  actions?: ReactNode;
+}) {
   return (
     <div className="panel rec-head">
       <div>

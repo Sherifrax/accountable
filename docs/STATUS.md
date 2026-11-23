@@ -23,6 +23,17 @@ npm install
 | `npm run seed` | Resets the data to the sample data. Safe while the app is running. |
 | `npm test` | Vitest, then pytest, then Playwright; stops at the first failure. Tests use their own database (temporary files for pytest, `e2e/.data/e2e.db` on ports 8001 and 5174 for Playwright), never `data/accountable.db`. |
 | `npm run test:front`, `test:back`, `test:e2e` | One kind of test at a time. |
+| `npm run check:quick` | The code checks (Prettier, ESLint, Ruff, the secrets scan, `ty`), then the type checks and the unit tests with coverage. It leaves out the end-to-end tests. |
+| `npm run check` | Everything `check:quick` runs, plus the end-to-end tests. This is the full check to run on your own computer before you push. |
+| `npm run format` | Rewrites files to the house style (Prettier and Ruff). |
+
+`npm run check` and `check:quick` need [gitleaks](https://github.com/gitleaks/gitleaks#installing) for the secrets scan (`brew install gitleaks` on a Mac). CI pins gitleaks 8.30.1.
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every push to any branch. It scans every commit for secrets with gitleaks, then runs `npm run check:quick`. It doesn't run the end-to-end tests; run `npm run check` on your own computer for those. CI needs no secrets of its own.
+
+Running `npm install` also sets up git hooks through lefthook (`lefthook.yml`): before each commit, it formats the staged files, then runs ESLint, Ruff, the type checks and the secrets scan on them.
 
 ## What exists
 
@@ -35,6 +46,7 @@ npm install
 ## What was checked, and what still needs a person
 
 - `npm test`: 57 Vitest tests, 81 pytest tests and 30 Playwright tests pass. Every Playwright test fails on any browser console error or warning.
+- `npm run check` passes every layer: Prettier, ESLint, Ruff, `ty`, the secrets scan, the type checks, 57 Vitest, 81 pytest (coverage above the 80% floor), and 30 end-to-end tests. Two suppressions remain, both with the reason written beside them: the pipeline card's click handler (`Board.tsx`, the keyboard path is the link inside the card) and TanStack Table's `useReactTable` (`DataTable.tsx`, React Compiler can't memoize it, and there's no compatible version of the library).
 - Contrast: every `*-ink` shade is at least 4.5:1 on white, on the page and on the panel-sunken grey, and the tag text is at least 4.5:1 on its tint. Text that used `--ink-faint` (2.6:1) was moved to `--ink-muted`; `--ink-faint` is now only for placeholders. White text on Cerulean (3.96:1) is used only at 14px semibold (the funnel bar).
 - Keyboard (R-Q-5): `08-keyboard.spec.ts` checks the Tab order, a visible outline on each stop, focus trapped in dialogs, Escape closing them, and focus going back to the button that opened them.
 - Screenshots of every screen at 1280px and 1440px (`e2e/results/screenshots/`) were looked at by eye while building. That caught an edit form starting on "None" for its organization, now fixed and tested.

@@ -1,9 +1,12 @@
+import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { test as base, expect } from "@playwright/test";
 import { TEST_DB } from "./playwright.config";
 
-const root = path.resolve(__dirname, "..");
+const HERE_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+const root = path.resolve(HERE_DIR, "..");
 
 /** Resets the test database to the sample data, the same way `npm run seed` does. */
 export function reseed() {

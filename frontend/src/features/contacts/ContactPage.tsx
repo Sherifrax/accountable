@@ -51,7 +51,14 @@ export function ContactPage() {
               <Panel title="Details">
                 <Details
                   items={[
-                    ["Organization", <RecordLink key="o" to={`/organizations/${contact.organization_id}`} name={contact.organization_name} />],
+                    [
+                      "Organization",
+                      <RecordLink
+                        key="o"
+                        to={`/organizations/${contact.organization_id}`}
+                        name={contact.organization_name}
+                      />,
+                    ],
                     ["Job title", <Plain key="j" value={contact.job_title} />],
                     ["Email", <Plain key="e" value={contact.email} />],
                     ["Phone", <Plain key="p" value={contact.phone} />],
@@ -65,7 +72,11 @@ export function ContactPage() {
                   <ListRow
                     key={d.id}
                     main={<Link to={`/deals/${d.id}`}>{d.name}</Link>}
-                    sub={<><StageLabel stage={d.stage} /> <LateTag late={d.late} /></>}
+                    sub={
+                      <>
+                        <StageLabel stage={d.stage} /> <LateTag late={d.late} />
+                      </>
+                    }
                     aside={<span className="mono">{money(d.value)}</span>}
                   />
                 ))}
@@ -79,12 +90,21 @@ export function ContactPage() {
                 </Button>
               }
             >
-              <ActivityTimeline activities={contact.timeline} hideContact emptyMessage="No activity yet. Log a note, call or email." />
+              <ActivityTimeline
+                activities={contact.timeline}
+                hideContact
+                emptyMessage="No activity yet. Log a note, call or email."
+              />
             </Panel>
           </div>
           {dialog === "edit" && <ContactForm contact={contact} onClose={close} />}
           {dialog === "log" && <ActivityForm contactId={contact.id} contactDeals={contact.deals} onClose={close} />}
-          <DeleteRecordDialog kind="contacts" id={dialog === "delete" ? contact.id : null} onClose={close} onDeleted={() => navigate("/contacts")} />
+          <DeleteRecordDialog
+            kind="contacts"
+            id={dialog === "delete" ? contact.id : null}
+            onClose={close}
+            onDeleted={() => navigate("/contacts")}
+          />
         </>
       )}
     </Async>

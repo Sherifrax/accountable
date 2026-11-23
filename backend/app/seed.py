@@ -34,17 +34,58 @@ ORGANIZATIONS = [
 ]
 
 PEOPLE = [
-    "Maya Okafor", "Daniel Reyes", "Priya Natarajan", "Tom Whitfield", "Lena Fischer", "Marcus Bell",
-    "Sofia Marchetti", "Ethan Cho", "Amara Diallo", "Jonas Lindqvist", "Hannah Brooks", "Rafael Duarte",
-    "Nora Haddad", "Callum Reid", "Yuki Tanaka", "Isabel Moreno", "Victor Alves", "Grace Nwosu",
-    "Oliver Grant", "Mei Lin Zhao", "Samuel Adler", "Chloe Bennett", "Arjun Mehta", "Freya Olsen",
-    "Leo Castillo", "Zainab Rahman", "Patrick Doyle", "Elena Petrova", "Noah Kessler", "Ines Carvalho",
-    "Dylan Hughes", "Aisha Khan", "Felix Wagner", "Rosa Delgado", "Ben Osei", "Clara Jensen",
-    "Mateo Vargas", "Tessa Morgan", "Hugo Laurent", "Naomi Feldman",
+    "Maya Okafor",
+    "Daniel Reyes",
+    "Priya Natarajan",
+    "Tom Whitfield",
+    "Lena Fischer",
+    "Marcus Bell",
+    "Sofia Marchetti",
+    "Ethan Cho",
+    "Amara Diallo",
+    "Jonas Lindqvist",
+    "Hannah Brooks",
+    "Rafael Duarte",
+    "Nora Haddad",
+    "Callum Reid",
+    "Yuki Tanaka",
+    "Isabel Moreno",
+    "Victor Alves",
+    "Grace Nwosu",
+    "Oliver Grant",
+    "Mei Lin Zhao",
+    "Samuel Adler",
+    "Chloe Bennett",
+    "Arjun Mehta",
+    "Freya Olsen",
+    "Leo Castillo",
+    "Zainab Rahman",
+    "Patrick Doyle",
+    "Elena Petrova",
+    "Noah Kessler",
+    "Ines Carvalho",
+    "Dylan Hughes",
+    "Aisha Khan",
+    "Felix Wagner",
+    "Rosa Delgado",
+    "Ben Osei",
+    "Clara Jensen",
+    "Mateo Vargas",
+    "Tessa Morgan",
+    "Hugo Laurent",
+    "Naomi Feldman",
 ]
 TITLES = [
-    "Operations Director", "Head of Procurement", "CEO", "Finance Manager", "IT Lead", "Office Manager",
-    "VP of Sales", "Facilities Manager", "Chief of Staff", "Purchasing Manager",
+    "Operations Director",
+    "Head of Procurement",
+    "CEO",
+    "Finance Manager",
+    "IT Lead",
+    "Office Manager",
+    "VP of Sales",
+    "Facilities Manager",
+    "Chief of Staff",
+    "Purchasing Manager",
 ]
 STATUS_PATTERN = ["lead"] * 4 + ["qualified"] * 3 + ["customer"] * 3
 
@@ -145,6 +186,57 @@ def _iso(value: datetime | date) -> str:
 def clear(conn) -> None:
     for table in (activities, deals, contacts, organizations):
         conn.execute(delete(table))
+
+
+def _seed_activities(
+    conn, rng: random.Random, today: date, deal_rows: list[tuple[int, int]], contact_ids: list[int]
+) -> None:
+    """Logs the sample activities, with fixed follow-up slots."""
+
+    # 80 activities over the past 12 months, with fixed follow-up slots.
+    overdue = [-2, -5, -9, -14]
+    due_soon = [0, 1, 3, 6]
+    later = [10, 21]
+    done_past = [-3, -8, -20, -30, -45, -60]
+    follow_ups = {}
+    slot = 3
+    for offsets, done in ((overdue, False), (due_soon, False), (later, False), (done_past, True)):
+        for offset in offsets:
+            follow_ups[slot] = (offset, done, len(follow_ups))
+            slot += 7
+    texts = {"note": NOTES, "call": CALLS, "email": EMAILS}
+    types = ["note", "call", "email", "call", "note", "email", "note"]
+    for i in range(80):
+        kind = types[i % len(types)]
+        if i % 2 == 0:
+            deal_id, contact_id = deal_rows[rng.randrange(len(deal_rows))]
+        else:
+            deal_id, contact_id = None, contact_ids[rng.randrange(len(contact_ids))]
+        follow = follow_ups.get(i)
+        if follow:
+            offset, done, n = follow
+            days_back = rng.randint(max(1, -offset + 1) if offset < 0 else 1, 25)
+            description = FOLLOW_UPS[n % len(FOLLOW_UPS)]
+            follow_date = _iso(today + timedelta(days=offset))
+            kind = "call" if i % 3 else "email"
+        else:
+            days_back = rng.randint(1, 360)
+            description = texts[kind][rng.randrange(len(texts[kind]))]
+            follow_date, done = None, False
+        occurred = _at(today - timedelta(days=days_back), rng.randint(9, 17), rng.choice([0, 15, 30, 45]))
+        conn.execute(
+            insert(activities).values(
+                type=kind,
+                contact_id=contact_id,
+                deal_id=deal_id,
+                description=description,
+                occurred_at=_iso(occurred),
+                follow_up_date=follow_date,
+                done=done,
+                created_at=_iso(occurred),
+                updated_at=_iso(occurred),
+            )
+        )
 
 
 def seed(conn, today: date | None = None) -> None:
@@ -257,51 +349,7 @@ def seed(conn, today: date | None = None) -> None:
                     updated_at=_iso(times[k]),
                 )
             )
-
-    # 80 activities over the past 12 months, with fixed follow-up slots.
-    overdue = [-2, -5, -9, -14]
-    due_soon = [0, 1, 3, 6]
-    later = [10, 21]
-    done_past = [-3, -8, -20, -30, -45, -60]
-    follow_ups = {}
-    slot = 3
-    for offsets, done in ((overdue, False), (due_soon, False), (later, False), (done_past, True)):
-        for offset in offsets:
-            follow_ups[slot] = (offset, done, len(follow_ups))
-            slot += 7
-    texts = {"note": NOTES, "call": CALLS, "email": EMAILS}
-    types = ["note", "call", "email", "call", "note", "email", "note"]
-    for i in range(80):
-        kind = types[i % len(types)]
-        if i % 2 == 0:
-            deal_id, contact_id = deal_rows[rng.randrange(len(deal_rows))]
-        else:
-            deal_id, contact_id = None, contact_ids[rng.randrange(len(contact_ids))]
-        follow = follow_ups.get(i)
-        if follow:
-            offset, done, n = follow
-            days_back = rng.randint(max(1, -offset + 1) if offset < 0 else 1, 25)
-            description = FOLLOW_UPS[n % len(FOLLOW_UPS)]
-            follow_date = _iso(today + timedelta(days=offset))
-            kind = "call" if i % 3 else "email"
-        else:
-            days_back = rng.randint(1, 360)
-            description = texts[kind][rng.randrange(len(texts[kind]))]
-            follow_date, done = None, False
-        occurred = _at(today - timedelta(days=days_back), rng.randint(9, 17), rng.choice([0, 15, 30, 45]))
-        conn.execute(
-            insert(activities).values(
-                type=kind,
-                contact_id=contact_id,
-                deal_id=deal_id,
-                description=description,
-                occurred_at=_iso(occurred),
-                follow_up_date=follow_date,
-                done=done,
-                created_at=_iso(occurred),
-                updated_at=_iso(occurred),
-            )
-        )
+    _seed_activities(conn, rng, today, deal_rows, contact_ids)
 
 
 def main() -> None:

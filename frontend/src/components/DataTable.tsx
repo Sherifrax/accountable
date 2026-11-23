@@ -89,6 +89,9 @@ export function DataTable<T>({
 
   const tableColumns = useMemo(() => withEmptyLast(columns), [columns]);
 
+  // TanStack Table's hook can't be memoized, so React Compiler skips this component. It still works, and
+  // no compatible version of the library exists.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: rows,
     columns: tableColumns,
@@ -148,14 +151,14 @@ export function DataTable<T>({
               </tr>
             ) : (
               sorted.map((row) => (
-                <tr
-                  key={rowKey(row.original)}
-                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                >
+                <tr key={rowKey(row.original)} onClick={onRowClick ? () => onRowClick(row.original) : undefined}>
                   {row.getVisibleCells().map((cell) => {
                     const meta = (cell.column.columnDef as Column<T>).meta;
                     return (
-                      <td key={cell.id} className={`${meta?.align === "num" ? "num" : ""} ${meta?.strong ? "strong" : ""}`.trim()}>
+                      <td
+                        key={cell.id}
+                        className={`${meta?.align === "num" ? "num" : ""} ${meta?.strong ? "strong" : ""}`.trim()}
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     );

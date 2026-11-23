@@ -11,7 +11,11 @@ const contacts = [
   contact(5, "Ed", null, "customer"),
   contact(6, "Flo", null, "customer"),
 ];
-const names = () => screen.getAllByRole("row").slice(1).map((r) => within(r).getAllByRole("cell")[0].textContent);
+const names = () =>
+  screen
+    .getAllByRole("row")
+    .slice(1)
+    .map((r) => within(r).getAllByRole("cell")[0].textContent);
 
 describe("ContactsPage", () => {
   it("shows a count on each status pill (R-TBL-4)", () => {

@@ -83,7 +83,7 @@ def make_engine(path: Path | str) -> Engine:
     engine = create_engine(f"sqlite:///{path}")
 
     @event.listens_for(engine, "connect")
-    def _foreign_keys_on(dbapi_connection, _record):  # noqa: ANN001
+    def _foreign_keys_on(dbapi_connection, _record):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys = ON")
         cursor.close()

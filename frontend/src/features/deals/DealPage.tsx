@@ -70,9 +70,24 @@ export function DealPage() {
                 <Details
                   items={[
                     ["Stage", <StageLabel key="s" stage={deal.stage} />],
-                    ["Value", <span key="v" className="mono">{money(deal.value)}</span>],
-                    ["Probability", <span key="p" className="mono">{deal.probability}%</span>],
-                    ["Expected revenue", <span key="e" className="mono">{money(deal.expected_revenue)}</span>],
+                    [
+                      "Value",
+                      <span key="v" className="mono">
+                        {money(deal.value)}
+                      </span>,
+                    ],
+                    [
+                      "Probability",
+                      <span key="p" className="mono">
+                        {deal.probability}%
+                      </span>,
+                    ],
+                    [
+                      "Expected revenue",
+                      <span key="e" className="mono">
+                        {money(deal.expected_revenue)}
+                      </span>,
+                    ],
                     [
                       "Close date",
                       deal.close_date ? (
@@ -84,7 +99,14 @@ export function DealPage() {
                         <Plain key="c" value={null} />
                       ),
                     ],
-                    ["Organization", <RecordLink key="o" to={`/organizations/${deal.organization_id}`} name={deal.organization_name} />],
+                    [
+                      "Organization",
+                      <RecordLink
+                        key="o"
+                        to={`/organizations/${deal.organization_id}`}
+                        name={deal.organization_name}
+                      />,
+                    ],
                     ["Contact", <RecordLink key="k" to={`/contacts/${deal.contact_id}`} name={deal.contact_name} />],
                   ]}
                 />
@@ -98,12 +120,21 @@ export function DealPage() {
                 </Button>
               }
             >
-              <ActivityTimeline activities={deal.timeline} hideDeal emptyMessage="No activity yet. Log a note, call or email." />
+              <ActivityTimeline
+                activities={deal.timeline}
+                hideDeal
+                emptyMessage="No activity yet. Log a note, call or email."
+              />
             </Panel>
           </div>
           {dialog === "edit" && <DealForm deal={deal} onClose={close} />}
           {dialog === "log" && <ActivityForm dealId={deal.id} onClose={close} />}
-          <DeleteRecordDialog kind="deals" id={dialog === "delete" ? deal.id : null} onClose={close} onDeleted={() => navigate("/deals")} />
+          <DeleteRecordDialog
+            kind="deals"
+            id={dialog === "delete" ? deal.id : null}
+            onClose={close}
+            onDeleted={() => navigate("/deals")}
+          />
         </>
       )}
     </Async>

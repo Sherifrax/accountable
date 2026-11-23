@@ -1,8 +1,6 @@
 """R-REC-1, R-REC-4."""
 
 
-
-
 def test_newest_first(client, make):
     c = make.contact()
     old = make.activity(contact_id=c["id"], description="old", occurred_at="2026-06-01T09:00:00")

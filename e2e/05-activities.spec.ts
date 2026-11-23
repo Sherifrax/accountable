@@ -11,7 +11,10 @@ function tomorrow() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-test("log a note and a call, see them newest first, follow the deal's stage change, and tick the follow-up", async ({ page, request }) => {
+test("log a note and a call, see them newest first, follow the deal's stage change, and tick the follow-up", async ({
+  page,
+  request,
+}) => {
   const deals: Deal[] = await (await request.get(`${API}/deals`)).json();
   const deal = deals.find((d) => d.stage === "New" && d.contact_id)!;
 
@@ -39,7 +42,9 @@ test("log a note and a call, see them newest first, follow the deal's stage chan
   // Move the deal: a stage-change entry appears, with no edit or delete.
   await page.getByLabel("Stage").selectOption("Qualified");
   await expect(timeline(page).getByRole("listitem").first()).toContainText("Moved from New to Qualified");
-  await expect(timeline(page).getByRole("listitem").first().getByRole("button", { name: "Edit activity" })).toHaveCount(0);
+  await expect(timeline(page).getByRole("listitem").first().getByRole("button", { name: "Edit activity" })).toHaveCount(
+    0,
+  );
 
   // The deal's call is on its contact's timeline too, newest first.
   await page.goto(`/contacts/${deal.contact_id}`);
@@ -84,11 +89,19 @@ test("overdue follow-ups are tagged, and edit and delete work with a confirmatio
   await expect(timeline(page).getByRole("listitem").first()).toContainText("Edited text");
   await expect(timeline(page).getByRole("listitem").first()).toContainText("Done");
 
-  await timeline(page).getByRole("listitem").first().getByRole("button", { name: "Delete activity" }).click({ force: true });
+  await timeline(page)
+    .getByRole("listitem")
+    .first()
+    .getByRole("button", { name: "Delete activity" })
+    .click({ force: true });
   await expect(dialog(page)).toContainText("Delete this note? This can't be undone.");
   await dialog(page).getByRole("button", { name: "Cancel" }).click();
   await expect(timeline(page)).toContainText("Edited text");
-  await timeline(page).getByRole("listitem").first().getByRole("button", { name: "Delete activity" }).click({ force: true });
+  await timeline(page)
+    .getByRole("listitem")
+    .first()
+    .getByRole("button", { name: "Delete activity" })
+    .click({ force: true });
   await dialog(page).getByRole("button", { name: "Delete activity" }).click();
   await expect(page.getByText("Activity deleted")).toBeVisible();
   await expect(timeline(page)).not.toContainText("Edited text");

@@ -11,7 +11,12 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -33,6 +38,9 @@ function SortableCard({ deal }: { deal: Deal }) {
   const navigate = useNavigate();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: deal.id });
   return (
+    // The deal's name is a link inside the card (CardFace, link), so keyboard users open the deal that way.
+    // This click handler is only for the mouse, so the keyboard rules for clickable elements don't apply.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
@@ -56,12 +64,19 @@ function Column({ stage, deals, onAdd }: { stage: string; deals: Deal[]; onAdd: 
   const sums = totals(deals);
   const style = stageStyle(stage);
   return (
-    <section className={`col ${isOver ? "over" : ""}`} style={{ background: style.tint }} aria-label={`${stage} column`} data-stage={stage}>
+    <section
+      className={`col ${isOver ? "over" : ""}`}
+      style={{ background: style.tint }}
+      aria-label={`${stage} column`}
+      data-stage={stage}
+    >
       <div className="col-head">
         <div className="col-name">
           <StageDot stage={stage} />
           <h2>{stage}</h2>
-          <span className="count" aria-label={`${sums.count} deals`}>{sums.count}</span>
+          <span className="count" aria-label={`${sums.count} deals`}>
+            {sums.count}
+          </span>
           <IconButton label={`Add deal to ${stage}`} onClick={() => onAdd(stage)}>
             <Plus size={16} />
           </IconButton>
@@ -69,11 +84,15 @@ function Column({ stage, deals, onAdd }: { stage: string; deals: Deal[]; onAdd: 
         <div className="col-sums">
           <span>
             <span className="label">Total </span>
-            <span className="mono" data-testid={`total-${stage}`}>{money(sums.value)}</span>
+            <span className="mono" data-testid={`total-${stage}`}>
+              {money(sums.value)}
+            </span>
           </span>
           <span>
             <span className="label">Expected </span>
-            <span className="mono" data-testid={`expected-${stage}`}>{money(sums.expected)}</span>
+            <span className="mono" data-testid={`expected-${stage}`}>
+              {money(sums.expected)}
+            </span>
           </span>
         </div>
       </div>

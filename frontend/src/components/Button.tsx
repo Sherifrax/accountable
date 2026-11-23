@@ -12,19 +12,20 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
 });
 
 /** Icon-only button. A label is required so screen readers and the tooltip have something to say. */
-export const IconButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & { label: string; danger?: boolean }>(
-  function IconButton({ label, danger, className = "", type = "button", children, ...rest }, ref) {
-    return (
-      <button
-        ref={ref}
-        type={type}
-        aria-label={label}
-        title={label}
-        className={`btn btn-ghost ${danger ? "danger" : ""} ${className}`.trim()}
-        {...rest}
-      >
-        {children}
-      </button>
-    );
-  },
-);
+export const IconButton = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement> & { label: string; danger?: boolean }
+>(function IconButton({ label, danger, className = "", type = "button", children, ...rest }, ref) {
+  return (
+    <button
+      ref={ref}
+      type={type}
+      aria-label={label}
+      title={label}
+      className={`btn btn-ghost ${danger ? "danger" : ""} ${className}`.trim()}
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+});

@@ -56,9 +56,14 @@ export function OrganizationForm({ organization, onClose, onSaved }: Props) {
   });
 
   return (
-    <FormDialog title={organization ? "Edit organization" : "New organization"} onClose={onClose} onSubmit={submit} submitting={save.isPending}>
+    <FormDialog
+      title={organization ? "Edit organization" : "New organization"}
+      onClose={onClose}
+      onSubmit={submit}
+      submitting={save.isPending}
+    >
       <FormField label="Name" error={errors.name?.message}>
-        <input {...register("name")} autoFocus autoComplete="off" />
+        <input {...register("name")} autoComplete="off" />
       </FormField>
       <FormField label="Industry" half>
         <input {...register("industry")} autoComplete="off" />

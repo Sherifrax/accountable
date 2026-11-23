@@ -1,6 +1,7 @@
 """Every dashboard figure, worked out from the current data (R-DASH-1 to R-DASH-6)."""
 
 from datetime import date, timedelta
+from typing import Any
 
 from sqlalchemy import select
 
@@ -26,7 +27,8 @@ def _months(today_: date) -> list[str]:
 
 def dashboard(conn) -> dict:
     today_ = today()
-    all_deals = list(conn.execute(select(deals)).mappings())
+    # Plain dicts, so each figure can mix the strings and numbers in a row without the type checker objecting.
+    all_deals: list[dict[str, Any]] = [dict(row) for row in conn.execute(select(deals)).mappings()]
 
     # Tiles
     open_deals = [d for d in all_deals if is_open(d["stage"])]
@@ -34,7 +36,7 @@ def dashboard(conn) -> dict:
     expected = sum(d["value"] * d["probability"] / 100 for d in open_deals)
 
     month_names = _months(today_)
-    months = {m: {"month": m, "revenue": 0, "won": 0, "lost": 0} for m in month_names}
+    months: dict[str, dict[str, Any]] = {m: {"month": m, "revenue": 0, "won": 0, "lost": 0} for m in month_names}
     for d in all_deals:
         if d["stage"] not in ("Won", "Lost") or not d["close_date"]:
             continue
@@ -59,7 +61,7 @@ def dashboard(conn) -> dict:
     history: dict[int, set[str]] = {}
     for a in conn.execute(select(activities).where(activities.c.type == "stage_change")).mappings():
         history.setdefault(a["deal_id"], set()).update({a["from_stage"], a["to_stage"]})
-    funnel = [{"stage": s, "value": 0, "count": 0} for s in FUNNEL_STAGES]
+    funnel: list[dict[str, Any]] = [{"stage": s, "value": 0, "count": 0} for s in FUNNEL_STAGES]
     for d in all_deals:
         seen = history.get(d["id"], set()) | {d["stage"]}
         ranks = [FUNNEL_STAGES.index(s) for s in seen if s in FUNNEL_STAGES]

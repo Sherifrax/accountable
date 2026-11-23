@@ -1,6 +1,15 @@
 """The six pipeline stages: order, usual probability, and whether they are open."""
 
-STAGES = [
+from typing import TypedDict
+
+
+class Stage(TypedDict):
+    name: str
+    probability: int
+    open: bool
+
+
+STAGES: list[Stage] = [
     {"name": "New", "probability": 10, "open": True},
     {"name": "Qualified", "probability": 25, "open": True},
     {"name": "Proposal", "probability": 50, "open": True},

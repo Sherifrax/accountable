@@ -115,8 +115,8 @@ def test_seeding_replaces_existing_data(client, make, seeded):  # R-RUN-2
 def test_activity_links_are_valid(seeded):
     with seeded.connect() as conn:
         count = conn.execute(
-            select(func.count()).select_from(activities).where(
-                activities.c.contact_id.is_(None), activities.c.deal_id.is_(None)
-            )
+            select(func.count())
+            .select_from(activities)
+            .where(activities.c.contact_id.is_(None), activities.c.deal_id.is_(None))
         ).scalar_one()
     assert count == 0

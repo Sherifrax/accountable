@@ -13,7 +13,7 @@ from .timelines import (
 )
 
 
-def _plain(row, *keys) -> dict:  # noqa: ANN001
+def _plain(row, *keys) -> dict:
     return {k: row[k] for k in keys}
 
 
@@ -83,7 +83,15 @@ def update_organization(conn, org_id: int, patch: dict) -> dict:
 # ---- contacts ----
 
 CONTACT_FIELDS = (
-    "id", "name", "email", "phone", "job_title", "organization_id", "status", "created_at", "updated_at",
+    "id",
+    "name",
+    "email",
+    "phone",
+    "job_title",
+    "organization_id",
+    "status",
+    "created_at",
+    "updated_at",
 )
 
 
@@ -93,7 +101,7 @@ def _contact_query():
     )
 
 
-def _contact_out(row) -> dict:  # noqa: ANN001
+def _contact_out(row) -> dict:
     return _plain(row, *CONTACT_FIELDS, "organization_name")
 
 
@@ -160,7 +168,15 @@ def create_activity(conn, data: dict) -> dict:
             updated_at=now,
         )
     )
-    return get_activity(conn, result.inserted_primary_key[0])
+    return _saved_activity(conn, result.inserted_primary_key[0])
+
+
+def _saved_activity(conn, activity_id: int) -> dict:
+    """The activity just written. It's always there, so a missing one means something went badly wrong."""
+    activity = get_activity(conn, activity_id)
+    if activity is None:
+        raise RuntimeError(f"Activity {activity_id} disappeared straight after it was saved")
+    return activity
 
 
 def _editable_activity(conn, activity_id: int):
@@ -178,11 +194,9 @@ def update_activity(conn, activity_id: int, patch: dict) -> dict:
             patch[key] = iso(patch[key])
     if patch:
         conn.execute(update(activities).where(activities.c.id == activity_id).values(**patch, updated_at=stamp()))
-    return get_activity(conn, activity_id)
+    return _saved_activity(conn, activity_id)
 
 
 def delete_activity(conn, activity_id: int) -> None:
     _editable_activity(conn, activity_id)
     conn.execute(delete(activities).where(activities.c.id == activity_id))
-
-

@@ -62,10 +62,15 @@ def test_organization_detail_has_everything(client, make):
 
 def test_patch_organization_and_contact(client, make):
     org = make.org("Old")
-    assert client.patch(f"/api/organizations/{org['id']}", json={"name": "New", "website": "x.com"}).json()["name"] == "New"
+    assert (
+        client.patch(f"/api/organizations/{org['id']}", json={"name": "New", "website": "x.com"}).json()["name"]
+        == "New"
+    )
     assert client.patch(f"/api/organizations/{org['id']}", json={"name": ""}).status_code == 422
     contact = make.contact("A")
     r = client.patch(f"/api/contacts/{contact['id']}", json={"organization_id": org["id"], "status": "customer"})
     assert r.json()["organization_name"] == "New" and r.json()["status"] == "customer"
     assert client.patch(f"/api/contacts/{contact['id']}", json={"email": "bad"}).status_code == 422
-    assert client.patch(f"/api/contacts/{contact['id']}", json={"organization_id": None}).json()["organization_id"] is None
+    assert (
+        client.patch(f"/api/contacts/{contact['id']}", json={"organization_id": None}).json()["organization_id"] is None
+    )

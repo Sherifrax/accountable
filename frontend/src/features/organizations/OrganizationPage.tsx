@@ -64,7 +64,12 @@ export function OrganizationPage() {
               <Panel title={`Contacts (${org.contacts.length})`}>
                 {org.contacts.length === 0 && <p className="empty-note">No contacts yet. Add one with New contact.</p>}
                 {org.contacts.map((c) => (
-                  <ListRow key={c.id} main={<Link to={`/contacts/${c.id}`}>{c.name}</Link>} sub={c.job_title ?? undefined} aside={<StatusTag status={c.status} />} />
+                  <ListRow
+                    key={c.id}
+                    main={<Link to={`/contacts/${c.id}`}>{c.name}</Link>}
+                    sub={c.job_title ?? undefined}
+                    aside={<StatusTag status={c.status} />}
+                  />
                 ))}
               </Panel>
               <Panel title={`Deals (${org.deals.length})`}>
@@ -73,20 +78,32 @@ export function OrganizationPage() {
                   <ListRow
                     key={d.id}
                     main={<Link to={`/deals/${d.id}`}>{d.name}</Link>}
-                    sub={<><StageLabel stage={d.stage} /> <LateTag late={d.late} /></>}
+                    sub={
+                      <>
+                        <StageLabel stage={d.stage} /> <LateTag late={d.late} />
+                      </>
+                    }
                     aside={<span className="mono">{money(d.value)}</span>}
                   />
                 ))}
               </Panel>
             </div>
             <Panel title="Timeline">
-              <ActivityTimeline activities={org.timeline} emptyMessage="No activity yet. Log one from a contact or deal." />
+              <ActivityTimeline
+                activities={org.timeline}
+                emptyMessage="No activity yet. Log one from a contact or deal."
+              />
             </Panel>
           </div>
           {dialog === "edit" && <OrganizationForm organization={org} onClose={close} />}
           {dialog === "contact" && <ContactForm organizationId={org.id} onClose={close} />}
           {dialog === "deal" && <DealForm organizationId={org.id} onClose={close} />}
-          <DeleteRecordDialog kind="organizations" id={dialog === "delete" ? org.id : null} onClose={close} onDeleted={() => navigate("/organizations")} />
+          <DeleteRecordDialog
+            kind="organizations"
+            id={dialog === "delete" ? org.id : null}
+            onClose={close}
+            onDeleted={() => navigate("/organizations")}
+          />
         </>
       )}
     </Async>

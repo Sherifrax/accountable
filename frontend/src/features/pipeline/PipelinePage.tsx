@@ -23,11 +23,15 @@ export function PipelinePage() {
         <div className="totals" aria-label="Open pipeline totals">
           <div>
             <span className="label">Open value</span>
-            <span className="mono" data-testid="board-total">{money(open.value)}</span>
+            <span className="mono" data-testid="board-total">
+              {money(open.value)}
+            </span>
           </div>
           <div>
             <span className="label">Expected revenue</span>
-            <span className="mono" data-testid="board-expected">{money(open.expected)}</span>
+            <span className="mono" data-testid="board-expected">
+              {money(open.expected)}
+            </span>
           </div>
         </div>
         <Button variant="primary" onClick={() => setForm({})}>

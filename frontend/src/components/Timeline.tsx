@@ -41,10 +41,20 @@ export function DoneCheckbox({ activity, onChange }: { activity: Activity; onCha
 }
 
 /** Links to the records an activity belongs to, leaving out the one the page is already about. */
-export function ActivityLinks({ activity, hideContact, hideDeal }: { activity: Activity; hideContact?: boolean; hideDeal?: boolean }) {
+export function ActivityLinks({
+  activity,
+  hideContact,
+  hideDeal,
+}: {
+  activity: Activity;
+  hideContact?: boolean;
+  hideDeal?: boolean;
+}) {
   return (
     <>
-      {activity.contact_id && !hideContact && <Link to={`/contacts/${activity.contact_id}`}>{activity.contact_name}</Link>}
+      {activity.contact_id && !hideContact && (
+        <Link to={`/contacts/${activity.contact_id}`}>{activity.contact_name}</Link>
+      )}
       {activity.deal_id && !hideDeal && <Link to={`/deals/${activity.deal_id}`}>{activity.deal_name}</Link>}
     </>
   );

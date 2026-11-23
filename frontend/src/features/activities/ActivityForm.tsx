@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useCreateActivity, useUpdateActivity } from "../../api/hooks";
 import type { Activity, Deal } from "../../api/types";
@@ -29,26 +29,30 @@ type Props = {
   onClose: () => void;
 };
 
+function activityDefaults(activity?: Activity): Values {
+  return {
+    type: (activity && activity.type !== "stage_change" ? activity.type : "note") as Values["type"],
+    description: activity?.description ?? "",
+    occurred_at: toInputDateTime(activity?.occurred_at ?? new Date()),
+    follow_up_date: activity?.follow_up_date ?? "",
+    done: activity?.done ?? false,
+    deal: "",
+  };
+}
+
 export function ActivityForm({ activity, dealId, contactId, contactDeals, onClose }: Props) {
   const create = useCreateActivity();
   const update = useUpdateActivity("Activity saved");
   const {
+    control,
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      type: (activity && activity.type !== "stage_change" ? activity.type : "note") as Values["type"],
-      description: activity?.description ?? "",
-      occurred_at: toInputDateTime(activity?.occurred_at ?? new Date()),
-      follow_up_date: activity?.follow_up_date ?? "",
-      done: activity?.done ?? false,
-      deal: "",
-    },
+    defaultValues: activityDefaults(activity),
   });
-  const followUp = watch("follow_up_date");
+  const followUp = useWatch({ control, name: "follow_up_date" });
 
   const submit = handleSubmit(async (v) => {
     try {
@@ -97,7 +101,7 @@ export function ActivityForm({ activity, dealId, contactId, contactDeals, onClos
         <input {...register("occurred_at")} type="datetime-local" />
       </FormField>
       <FormField label="Description" error={errors.description?.message}>
-        <textarea {...register("description")} autoFocus />
+        <textarea {...register("description")} data-autofocus />
       </FormField>
       {!activity && contactDeals && (
         <FormField label="Deal (optional)">

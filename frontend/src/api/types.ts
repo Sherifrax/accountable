@@ -85,7 +85,12 @@ export type Dashboard = {
 };
 
 // What the forms send.
-export type OrganizationInput = { name: string; website?: string | null; industry?: string | null; notes?: string | null };
+export type OrganizationInput = {
+  name: string;
+  website?: string | null;
+  industry?: string | null;
+  notes?: string | null;
+};
 export type ContactInput = {
   name: string;
   email?: string | null;

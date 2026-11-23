@@ -1,41 +1,48 @@
 :root {
   /* Brand */
-  --sea-green: #06D6A0;   --sea-green-ink: #04785A;   /* text on light */
-  --marigold:  #FFC145;   --marigold-ink:  #8A5A00;
-  --coral:     #F78C6B;   --coral-ink:     #B0482A;
-  --cerulean:  #118AB2;   --cerulean-ink:  #0C6A89;
-  --raspberry: #EF476F;   --raspberry-ink: #C21E48;
-  --midnight:  #073B4C;
-  --sea-mist:  #CDD8DB;
+  --sea-green: #06d6a0;
+  --sea-green-ink: #04785a; /* text on light */
+  --marigold: #ffc145;
+  --marigold-ink: #8a5a00;
+  --coral: #f78c6b;
+  --coral-ink: #b0482a;
+  --cerulean: #118ab2;
+  --cerulean-ink: #0c6a89;
+  --raspberry: #ef476f;
+  --raspberry-ink: #c21e48;
+  --midnight: #073b4c;
+  --sea-mist: #cdd8db;
 
   /* Surfaces (light mode only) */
-  --page: #F0F4F5;
-  --panel: #FFFFFF;
-  --panel-sunken: #F6F9F9;      /* table header, inputs */
-  --hover: #E9F0F1;
+  --page: #f0f4f5;
+  --panel: #ffffff;
+  --panel-sunken: #f6f9f9; /* table header, inputs */
+  --hover: #e9f0f1;
   --ink: var(--midnight);
-  --ink-muted: #4F6F7A;
-  --ink-faint: #8FA3A9;
-  --divider: #E3EAEC;           /* rows inside a panel only */
+  --ink-muted: #4f6f7a;
+  --ink-faint: #8fa3a9;
+  --divider: #e3eaec; /* rows inside a panel only */
 
   /* Stage colors (see Concern 1) */
   --stage-new: var(--cerulean);
   --stage-qualified: var(--marigold);
   --stage-proposal: var(--coral);
-  --stage-negotiation: #3D6B7A;
+  --stage-negotiation: #3d6b7a;
   --stage-won: var(--sea-green);
-  --stage-lost: #A9B8BD;
+  --stage-lost: #a9b8bd;
 
   /* Shape and depth */
-  --radius-panel: 14px;  --radius-control: 8px;  --radius-pill: 999px;
-  --shadow-panel: 0 1px 2px rgba(7,59,76,.04), 0 4px 16px rgba(7,59,76,.05);
-  --shadow-lift: 0 8px 24px rgba(7,59,76,.14);   /* dragged card, menus */
+  --radius-panel: 14px;
+  --radius-control: 8px;
+  --radius-pill: 999px;
+  --shadow-panel: 0 1px 2px rgba(7, 59, 76, 0.04), 0 4px 16px rgba(7, 59, 76, 0.05);
+  --shadow-lift: 0 8px 24px rgba(7, 59, 76, 0.14); /* dragged card, menus */
 
   /* Type: brand font first, then a system font for each platform, then the generic family. */
-  --font-sans: "Instrument Sans Variable", "Instrument Sans",
-    -apple-system, "Segoe UI", "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
-  --font-serif: "Instrument Serif",
-    Georgia, "Times New Roman", "Liberation Serif", serif;
-  --font-mono: "JetBrains Mono Variable", "JetBrains Mono",
-    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-sans:
+    "Instrument Sans Variable", "Instrument Sans", -apple-system, "Segoe UI", "Helvetica Neue", Arial,
+    "Liberation Sans", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", "Liberation Serif", serif;
+  --font-mono:
+    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }

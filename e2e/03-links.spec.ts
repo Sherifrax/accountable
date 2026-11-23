@@ -1,13 +1,23 @@
 import { API, expect, test } from "./fixtures";
 
-type Contact = { id: number; name: string; status: string; organization_id: number | null; organization_name: string | null };
+type Contact = {
+  id: number;
+  name: string;
+  status: string;
+  organization_id: number | null;
+  organization_name: string | null;
+};
 
 test("contacts filter by status, with counts", async ({ page, request }) => {
   const contacts: Contact[] = await (await request.get(`${API}/contacts`)).json();
   await page.goto("/contacts");
   const group = page.getByRole("group", { name: "Filter by status" });
   await expect(group.getByRole("button", { name: /^All/ })).toContainText(String(contacts.length));
-  for (const [label, status] of [["Lead", "lead"], ["Qualified", "qualified"], ["Customer", "customer"]]) {
+  for (const [label, status] of [
+    ["Lead", "lead"],
+    ["Qualified", "qualified"],
+    ["Customer", "customer"],
+  ]) {
     const expected = contacts.filter((c) => c.status === status).length;
     expect(expected).toBeGreaterThan(0);
     await expect(group.getByRole("button", { name: new RegExp(`^${label}`) })).toContainText(String(expected));
@@ -39,7 +49,12 @@ test("an organization page shows its contacts, deals and one combined timeline",
   const dealIds = new Set(org.deals.map((d: { id: number }) => d.id));
   const contactIds = new Set(org.contacts.map((c: { id: number }) => c.id));
   expect(org.timeline.some((a: { deal_id: number }) => dealIds.has(a.deal_id))).toBe(true);
-  expect(org.timeline.some((a: { contact_id: number; deal_id: number | null }) => contactIds.has(a.contact_id) && !dealIds.has(a.deal_id as number))).toBe(true);
+  expect(
+    org.timeline.some(
+      (a: { contact_id: number; deal_id: number | null }) =>
+        contactIds.has(a.contact_id) && !dealIds.has(a.deal_id as number),
+    ),
+  ).toBe(true);
   expect(text.join("\n")).toContain(org.timeline[0].description);
   // Newest first.
   expect(org.timeline.map((a: { occurred_at: string }) => a.occurred_at)).toEqual(
@@ -63,7 +78,9 @@ test("a contact page links to its organization, deals and timeline", async ({ pa
   await expect(details.getByRole("link", { name: detail.organization_name })).toBeVisible();
   const deals = page.getByRole("region", { name: /^Deals/ });
   for (const d of detail.deals) await expect(deals.getByRole("link", { name: d.name })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Timeline" }).getByRole("listitem")).toHaveCount(detail.timeline.length);
+  await expect(page.getByRole("region", { name: "Timeline" }).getByRole("listitem")).toHaveCount(
+    detail.timeline.length,
+  );
 
   await deals.getByRole("link", { name: detail.deals[0].name }).click();
   await expect(page).toHaveURL(new RegExp(`/deals/${detail.deals[0].id}$`));
@@ -78,7 +95,12 @@ test("a deleted link shows None on the record page (R-REC-5)", async ({ page, re
   const deal = (await (await request.get(`${API}/deals`)).json())[0];
   await request.delete(`${API}/organizations/${deal.organization_id}`);
   await page.goto(`/deals/${deal.id}`);
-  await expect(page.getByRole("region", { name: "Details" }).locator("div", { hasText: /^Organization/ }).last()).toContainText("None");
+  await expect(
+    page
+      .getByRole("region", { name: "Details" })
+      .locator("div", { hasText: /^Organization/ })
+      .last(),
+  ).toContainText("None");
 });
 
 test("the deal page has a stage selector that changes the stage straight away", async ({ page, request }) => {

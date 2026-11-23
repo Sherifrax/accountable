@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { useContacts, useOrganizations, useSaveDeal, useStages } from "../../api/hooks";
 import type { Deal } from "../../api/types";
@@ -28,7 +28,10 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 type Props = {
-  deal?: Pick<Deal, "id" | "name" | "organization_id" | "contact_id" | "stage" | "value" | "probability" | "close_date">;
+  deal?: Pick<
+    Deal,
+    "id" | "name" | "organization_id" | "contact_id" | "stage" | "value" | "probability" | "close_date"
+  >;
   /** Choose the stage on a new deal (the "+" on a pipeline column). */
   stage?: string;
   /** Fill in the organization or contact on a new deal (from their pages). */
@@ -44,6 +47,36 @@ export function DealForm(props: Props) {
   return ready ? <DealFormFields {...props} /> : null;
 }
 
+function dealDefaults(
+  deal: Props["deal"],
+  initialStage: string,
+  organizationId: number | undefined,
+  contactId: number | undefined,
+  usualProbability: number | undefined,
+): Values {
+  return {
+    name: deal?.name ?? "",
+    organization_id: String(deal?.organization_id ?? organizationId ?? ""),
+    contact_id: String(deal?.contact_id ?? contactId ?? ""),
+    stage: initialStage,
+    value: deal ? String(deal.value) : "",
+    probability: String(deal?.probability ?? usualProbability ?? ""),
+    close_date: deal?.close_date ?? "",
+  };
+}
+
+function dealInput(v: Values) {
+  return {
+    name: v.name,
+    organization_id: v.organization_id ? Number(v.organization_id) : null,
+    contact_id: v.contact_id ? Number(v.contact_id) : null,
+    stage: v.stage,
+    value: Number(cleanNumber(v.value)),
+    probability: Number(v.probability),
+    close_date: v.close_date || null,
+  };
+}
+
 function DealFormFields({ deal, stage, organizationId, contactId, onClose, onSaved }: Props) {
   const save = useSaveDeal();
   const stages = useStages();
@@ -53,43 +86,26 @@ function DealFormFields({ deal, stage, organizationId, contactId, onClose, onSav
 
   const initialStage = deal?.stage ?? stage ?? "New";
   const {
+    control,
     register,
     handleSubmit,
-    watch,
     setValue,
     getValues,
     formState: { errors },
   } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      name: deal?.name ?? "",
-      organization_id: String(deal?.organization_id ?? organizationId ?? ""),
-      contact_id: String(deal?.contact_id ?? contactId ?? ""),
-      stage: initialStage,
-      value: deal ? String(deal.value) : "",
-      probability: String(deal?.probability ?? usual(initialStage) ?? ""),
-      close_date: deal?.close_date ?? "",
-    },
+    defaultValues: dealDefaults(deal, initialStage, organizationId, contactId, usual(initialStage)),
   });
 
-  const organization = watch("organization_id");
-  const stageNow = watch("stage");
-  const contactOptions = (contacts.data ?? []).filter((c) => !organization || String(c.organization_id) === organization);
+  const organization = useWatch({ control, name: "organization_id" });
+  const stageNow = useWatch({ control, name: "stage" });
+  const contactOptions = (contacts.data ?? []).filter(
+    (c) => !organization || String(c.organization_id) === organization,
+  );
 
   const submit = handleSubmit(async (v) => {
     try {
-      const saved = await save.mutateAsync({
-        id: deal?.id,
-        input: {
-          name: v.name,
-          organization_id: v.organization_id ? Number(v.organization_id) : null,
-          contact_id: v.contact_id ? Number(v.contact_id) : null,
-          stage: v.stage,
-          value: Number(cleanNumber(v.value)),
-          probability: Number(v.probability),
-          close_date: v.close_date || null,
-        },
-      });
+      const saved = await save.mutateAsync({ id: deal?.id, input: dealInput(v) });
       onClose();
       onSaved?.(saved);
     } catch {
@@ -103,7 +119,7 @@ function DealFormFields({ deal, stage, organizationId, contactId, onClose, onSav
   return (
     <FormDialog title={deal ? "Edit deal" : "New deal"} onClose={onClose} onSubmit={submit} submitting={save.isPending}>
       <FormField label="Name" error={errors.name?.message}>
-        <input {...register("name")} autoFocus autoComplete="off" />
+        <input {...register("name")} autoComplete="off" />
       </FormField>
       <FormField label="Organization" half>
         <Select
@@ -152,7 +168,12 @@ function DealFormFields({ deal, stage, organizationId, contactId, onClose, onSav
           ))}
         </Select>
       </FormField>
-      <FormField label="Probability (%)" half error={errors.probability?.message} hint={usual(stageNow) !== undefined ? `Usual for ${stageNow}: ${usual(stageNow)}%` : undefined}>
+      <FormField
+        label="Probability (%)"
+        half
+        error={errors.probability?.message}
+        hint={usual(stageNow) !== undefined ? `Usual for ${stageNow}: ${usual(stageNow)}%` : undefined}
+      >
         <input {...register("probability")} inputMode="numeric" autoComplete="off" />
       </FormField>
       <FormField label="Value (USD)" half error={errors.value?.message}>

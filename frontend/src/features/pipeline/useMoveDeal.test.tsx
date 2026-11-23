@@ -11,10 +11,30 @@ import { useMoveDeal } from "./useMoveDeal";
 const toastError = vi.fn();
 vi.mock("sonner", () => ({ toast: { error: (...args: unknown[]) => toastError(...args), success: vi.fn() } }));
 
-const deal = (id: number, stage: string, position: number, value: number, probability: number, extra: Partial<Deal> = {}): Deal => ({
-  id, name: `Deal ${id}`, organization_id: null, organization_name: null, contact_id: null, contact_name: null,
-  stage, value, probability, expected_revenue: (value * probability) / 100, close_date: "2099-01-01", late: false,
-  position, created_at: "", updated_at: "", ...extra,
+const deal = (
+  id: number,
+  stage: string,
+  position: number,
+  value: number,
+  probability: number,
+  extra: Partial<Deal> = {},
+): Deal => ({
+  id,
+  name: `Deal ${id}`,
+  organization_id: null,
+  organization_name: null,
+  contact_id: null,
+  contact_name: null,
+  stage,
+  value,
+  probability,
+  expected_revenue: (value * probability) / 100,
+  close_date: "2099-01-01",
+  late: false,
+  position,
+  created_at: "",
+  updated_at: "",
+  ...extra,
 });
 
 // New: 1, 2, 3.  Proposal: 4.  Won: 5.
@@ -56,7 +76,9 @@ describe("applyMove", () => {
   });
 
   it("puts an index past the end last", () => {
-    expect(ids(applyMove(start(), { id: 1, stage: "Proposal", index: 99 }, STAGES, "2026-06-15"), "Proposal")).toEqual([4, 1]);
+    expect(ids(applyMove(start(), { id: 1, stage: "Proposal", index: 99 }, STAGES, "2026-06-15"), "Proposal")).toEqual([
+      4, 1,
+    ]);
   });
 });
 
@@ -75,10 +97,14 @@ describe("totals", () => {
 
 describe("useMoveDeal (R-PIPE-5)", () => {
   function setup() {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } } });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } },
+    });
     client.setQueryData(keys.stages, STAGES);
     client.setQueryData(keys.deals, start());
-    const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
     return { client, ...renderHook(() => useMoveDeal(), { wrapper }) };
   }
   const cached = (client: QueryClient) => client.getQueryData<Deal[]>(keys.deals)!;
@@ -87,7 +113,10 @@ describe("useMoveDeal (R-PIPE-5)", () => {
 
   it("moves the card and changes the totals before the server replies", async () => {
     let reply: (value: unknown) => void = () => {};
-    vi.stubGlobal("fetch", vi.fn(() => new Promise((resolve) => (reply = resolve))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise((resolve) => (reply = resolve))),
+    );
     const { client, result } = setup();
     act(() => result.current.mutate({ id: 1, stage: "Proposal", index: 0 }));
     await waitFor(() => expect(ids(cached(client), "Proposal")).toEqual([1, 4]));
@@ -101,7 +130,10 @@ describe("useMoveDeal (R-PIPE-5)", () => {
   });
 
   it("puts the card back and shows a message when the server refuses", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 500, json: async () => ({ detail: "Nope" }) })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: false, status: 500, json: async () => ({ detail: "Nope" }) })),
+    );
     const { client, result } = setup();
     act(() => result.current.mutate({ id: 1, stage: "Won", index: 0 }));
     await waitFor(() => expect(toastError).toHaveBeenCalledWith("Couldn't save the move. Try again."));
@@ -111,7 +143,12 @@ describe("useMoveDeal (R-PIPE-5)", () => {
   });
 
   it("puts the card back when the server can't be reached", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("offline"); }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("offline");
+      }),
+    );
     const { client, result } = setup();
     act(() => result.current.mutate({ id: 2, stage: "Lost", index: 0 }));
     await waitFor(() => expect(toastError).toHaveBeenCalled());

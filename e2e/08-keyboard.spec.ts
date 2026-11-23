@@ -1,6 +1,8 @@
 import { expect, test } from "./fixtures";
 
-test("every action can be reached with Tab, dialogs trap focus and close with Escape, and focus is visible (R-Q-5)", async ({ page }) => {
+test("every action can be reached with Tab, dialogs trap focus and close with Escape, and focus is visible (R-Q-5)", async ({
+  page,
+}) => {
   await page.goto("/deals");
   const newDeal = page.getByRole("button", { name: "New deal" });
 
@@ -11,12 +13,16 @@ test("every action can be reached with Tab, dialogs trap focus and close with Es
     const info = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
       const style = getComputedStyle(el);
-      return { label: el.getAttribute("aria-label") || el.textContent?.trim() || el.tagName, outline: style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0 };
+      return {
+        label: el.getAttribute("aria-label") || el.textContent?.trim() || el.tagName,
+        outline: style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0,
+      };
     });
     expect(info.outline, `no focus outline on ${info.label}`).toBe(true);
     reached.add(info.label);
   }
-  for (const name of ["Dashboard", "Pipeline", "Deals", "Organizations", "Contacts", "New deal"]) expect(reached).toContain(name);
+  for (const name of ["Dashboard", "Pipeline", "Deals", "Organizations", "Contacts", "New deal"])
+    expect(reached).toContain(name);
 
   // Open the dialog from the keyboard; Escape closes it and focus goes back.
   await newDeal.focus();

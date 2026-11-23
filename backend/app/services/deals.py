@@ -9,7 +9,7 @@ from .common import Invalid, NotFound, check_link, iso, require, stamp
 from .timelines import deal_timeline
 
 
-def deal_out(row) -> dict:  # noqa: ANN001
+def deal_out(row) -> dict:
     close = row["close_date"]
     open_ = is_open(row["stage"])
     return {
@@ -32,16 +32,13 @@ def deal_out(row) -> dict:  # noqa: ANN001
 
 
 def _query():
-    return (
-        select(
-            deals,
-            organizations.c.name.label("organization_name"),
-            contacts.c.name.label("contact_name"),
-        )
-        .select_from(
-            deals.outerjoin(organizations, deals.c.organization_id == organizations.c.id).outerjoin(
-                contacts, deals.c.contact_id == contacts.c.id
-            )
+    return select(
+        deals,
+        organizations.c.name.label("organization_name"),
+        contacts.c.name.label("contact_name"),
+    ).select_from(
+        deals.outerjoin(organizations, deals.c.organization_id == organizations.c.id).outerjoin(
+            contacts, deals.c.contact_id == contacts.c.id
         )
     )
 

@@ -1,11 +1,20 @@
+import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test } from "./fixtures";
 
-const SHOTS = path.resolve(__dirname, "results", "screenshots");
+const HERE_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+const SHOTS = path.resolve(HERE_DIR, "results", "screenshots");
 const SCREENS: [string, string][] = [
-  ["dashboard", "/"], ["pipeline", "/pipeline"], ["deals", "/deals"], ["organizations", "/organizations"],
-  ["contacts", "/contacts"], ["organization", "/organizations/1"], ["contact", "/contacts/1"], ["deal", "/deals/1"],
+  ["dashboard", "/"],
+  ["pipeline", "/pipeline"],
+  ["deals", "/deals"],
+  ["organizations", "/organizations"],
+  ["contacts", "/contacts"],
+  ["organization", "/organizations/1"],
+  ["contact", "/contacts/1"],
+  ["deal", "/deals/1"],
 ];
 
 test("the dashboard's charts render", async ({ page }) => {
@@ -55,11 +64,20 @@ test("the brand fonts and colors are in use", async ({ page }) => {
   await page.goto("/pipeline");
   await expect(page.locator(".col")).toHaveCount(6);
   const dots = await page.evaluate(() =>
-    Object.fromEntries(Array.from(document.querySelectorAll(".col")).map((c) => [c.getAttribute("data-stage"), getComputedStyle(c.querySelector(".dot")!).backgroundColor])),
+    Object.fromEntries(
+      Array.from(document.querySelectorAll(".col")).map((c) => [
+        c.getAttribute("data-stage"),
+        getComputedStyle(c.querySelector(".dot")!).backgroundColor,
+      ]),
+    ),
   );
   expect(dots).toEqual({
-    New: "rgb(17, 138, 178)", Qualified: "rgb(255, 193, 69)", Proposal: "rgb(247, 140, 107)",
-    Negotiation: "rgb(61, 107, 122)", Won: "rgb(6, 214, 160)", Lost: "rgb(169, 184, 189)",
+    New: "rgb(17, 138, 178)",
+    Qualified: "rgb(255, 193, 69)",
+    Proposal: "rgb(247, 140, 107)",
+    Negotiation: "rgb(61, 107, 122)",
+    Won: "rgb(6, 214, 160)",
+    Lost: "rgb(169, 184, 189)",
   });
 });
 

@@ -22,12 +22,22 @@ export function OrganizationsPage() {
 
   const columns = useMemo<Column<OrganizationRow>[]>(
     () => [
-      { accessorKey: "name", header: "Name", meta: { strong: true }, cell: ({ row }) => <Link to={`/organizations/${row.original.id}`}>{row.original.name}</Link> },
+      {
+        accessorKey: "name",
+        header: "Name",
+        meta: { strong: true },
+        cell: ({ row }) => <Link to={`/organizations/${row.original.id}`}>{row.original.name}</Link>,
+      },
       { accessorKey: "industry", header: "Industry", cell: ({ row }) => <Plain value={row.original.industry} /> },
       { accessorKey: "website", header: "Website", cell: ({ row }) => <WebsiteLink site={row.original.website} /> },
       { accessorKey: "contact_count", header: "Contacts", meta: { align: "num" } },
       { accessorKey: "open_deal_count", header: "Open deals", meta: { align: "num" } },
-      { accessorKey: "open_pipeline_value", header: "Open pipeline", meta: { align: "num" }, cell: ({ row }) => money(row.original.open_pipeline_value) },
+      {
+        accessorKey: "open_pipeline_value",
+        header: "Open pipeline",
+        meta: { align: "num" },
+        cell: ({ row }) => money(row.original.open_pipeline_value),
+      },
     ],
     [],
   );
@@ -47,12 +57,25 @@ export function OrganizationsPage() {
               searchPlaceholder="Search organizations"
               data={data}
               columns={columns}
-              visibleText={(o) => [o.name, o.industry, o.website, o.contact_count, o.open_deal_count, money(o.open_pipeline_value)]}
+              visibleText={(o) => [
+                o.name,
+                o.industry,
+                o.website,
+                o.contact_count,
+                o.open_deal_count,
+                money(o.open_pipeline_value),
+              ]}
               defaultSort={{ id: "name" }}
               rowKey={(o) => o.id}
               onRowClick={(o) => navigate(`/organizations/${o.id}`)}
               emptyMessage="No organizations yet. Add one with New organization."
-              rowActions={(o) => <RowActions name={o.name} onEdit={() => setForm({ organization: o })} onDelete={() => setDeleting(o.id)} />}
+              rowActions={(o) => (
+                <RowActions
+                  name={o.name}
+                  onEdit={() => setForm({ organization: o })}
+                  onDelete={() => setDeleting(o.id)}
+                />
+              )}
             />
           )}
         </Async>

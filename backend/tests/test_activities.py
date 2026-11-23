@@ -9,8 +9,16 @@ def test_needs_contact_or_deal(client):  # R-DATA-10
 
 def test_type_and_description_validated(client, make):
     c = make.contact()
-    assert client.post("/api/activities", json={"type": "stage_change", "description": "x", "contact_id": c["id"]}).status_code == 422
-    assert client.post("/api/activities", json={"type": "note", "description": " ", "contact_id": c["id"]}).status_code == 422
+    assert (
+        client.post(
+            "/api/activities", json={"type": "stage_change", "description": "x", "contact_id": c["id"]}
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post("/api/activities", json={"type": "note", "description": " ", "contact_id": c["id"]}).status_code
+        == 422
+    )
 
 
 def test_logging_on_deal_adds_its_contact(make):  # R-DATA-10
@@ -47,7 +55,9 @@ def test_follow_up_starts_not_done_and_can_be_done(client, make):  # R-DATA-11, 
 def test_edit_adds_and_removes_follow_up(client, make):  # R-ACT-2
     c = make.contact()
     act = make.activity(contact_id=c["id"])
-    r = client.patch(f"/api/activities/{act['id']}", json={"follow_up_date": "2026-07-01", "description": "New text", "type": "call"})
+    r = client.patch(
+        f"/api/activities/{act['id']}", json={"follow_up_date": "2026-07-01", "description": "New text", "type": "call"}
+    )
     assert (r.json()["follow_up_date"], r.json()["description"], r.json()["type"]) == ("2026-07-01", "New text", "call")
     r = client.patch(f"/api/activities/{act['id']}", json={"follow_up_date": None})
     assert r.json()["follow_up_date"] is None

@@ -29,9 +29,19 @@ test("nothing is requested from outside this computer (R-RUN-5)", async ({ page 
   const outside: string[] = [];
   page.on("request", (request) => {
     const url = new URL(request.url());
-    if (!["localhost", "127.0.0.1"].includes(url.hostname) && url.protocol.startsWith("http")) outside.push(request.url());
+    if (!["localhost", "127.0.0.1"].includes(url.hostname) && url.protocol.startsWith("http"))
+      outside.push(request.url());
   });
-  for (const path of ["/", "/pipeline", "/deals", "/organizations", "/contacts", "/organizations/1", "/deals/1", "/contacts/1"]) {
+  for (const path of [
+    "/",
+    "/pipeline",
+    "/deals",
+    "/organizations",
+    "/contacts",
+    "/organizations/1",
+    "/deals/1",
+    "/contacts/1",
+  ]) {
     await page.goto(path);
     await page.waitForLoadState("networkidle");
   }

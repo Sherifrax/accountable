@@ -1,6 +1,6 @@
 import * as RadixDialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { type FormEvent, type ReactNode, useEffect, useRef } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { IconButton } from "./Button";
 
 type Props = {
@@ -17,16 +17,22 @@ type Props = {
 /** Radix Dialog: traps focus, closes with Escape, and gives focus back when it closes (R-Q-5). */
 export function Dialog({ open, onClose, title, description, children, footer, onSubmit }: Props) {
   // Dialogs here open from state, not from a Radix trigger, so give focus back by hand (R-Q-5).
-  const opener = useRef<Element | null>(null);
-  if (!open) opener.current = null;
-  else if (opener.current === null) opener.current = document.activeElement;
+  // The element that had focus as the dialog opened is kept in state, since refs can't be read during render.
+  const [wasOpen, setWasOpen] = useState(open);
+  // A dialog is often mounted already open, so the first render captures the opener too.
+  const [opener, setOpener] = useState<HTMLElement | null>(() =>
+    open ? (document.activeElement as HTMLElement | null) : null,
+  );
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    setOpener(open ? (document.activeElement as HTMLElement | null) : null);
+  }
   useEffect(() => {
-    if (!open) return;
+    if (!opener) return;
     return () => {
-      const previous = opener.current as HTMLElement | null;
-      if (previous && document.contains(previous)) previous.focus();
+      if (document.contains(opener)) opener.focus();
     };
-  }, [open]);
+  }, [opener]);
 
   const body = (
     <>
@@ -41,14 +47,18 @@ export function Dialog({ open, onClose, title, description, children, footer, on
         <RadixDialog.Content
           className="dialog"
           onOpenAutoFocus={(event) => {
-            // Forms start in their first field rather than on the close button.
-            const field = (event.currentTarget as HTMLElement).querySelector<HTMLElement>("input, textarea, select");
+            // Forms start in their first field rather than on the close button, or in the field marked data-autofocus.
+            const root = event.currentTarget as HTMLElement;
+            const field =
+              root.querySelector<HTMLElement>("[data-autofocus]") ??
+              root.querySelector<HTMLElement>("input, textarea, select");
             if (onSubmit && field) {
               event.preventDefault();
               field.focus();
             }
           }}
-          {...(description ? {} : { "aria-describedby": undefined })}>
+          {...(description ? {} : { "aria-describedby": undefined })}
+        >
           <div className="dlg-head">
             <RadixDialog.Title className="section-title">{title}</RadixDialog.Title>
             <RadixDialog.Close asChild>
@@ -57,9 +67,7 @@ export function Dialog({ open, onClose, title, description, children, footer, on
               </IconButton>
             </RadixDialog.Close>
           </div>
-          {description && (
-            <RadixDialog.Description className="dlg-text">{description}</RadixDialog.Description>
-          )}
+          {description && <RadixDialog.Description className="dlg-text">{description}</RadixDialog.Description>}
           {onSubmit ? (
             <form onSubmit={onSubmit} noValidate>
               {body}

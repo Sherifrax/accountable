@@ -23,7 +23,15 @@ const FILTERS: { value: Filter; label: string }[] = [
 ];
 
 /** Segmented filter with a count on each pill (R-TBL-4). */
-export function StatusFilter({ contacts, value, onChange }: { contacts: Contact[]; value: Filter; onChange: (f: Filter) => void }) {
+export function StatusFilter({
+  contacts,
+  value,
+  onChange,
+}: {
+  contacts: Contact[];
+  value: Filter;
+  onChange: (f: Filter) => void;
+}) {
   const count = (f: Filter) => (f === "all" ? contacts.length : contacts.filter((c) => c.status === f).length);
   return (
     <div className="seg" role="group" aria-label="Filter by status">
@@ -45,8 +53,19 @@ export function ContactsPage() {
 
   const columns = useMemo<Column<Contact>[]>(
     () => [
-      { accessorKey: "name", header: "Name", meta: { strong: true }, cell: ({ row }) => <Link to={`/contacts/${row.original.id}`}>{row.original.name}</Link> },
-      { accessorKey: "organization_name", header: "Organization", cell: ({ row }) => <RecordLink to={`/organizations/${row.original.organization_id}`} name={row.original.organization_name} /> },
+      {
+        accessorKey: "name",
+        header: "Name",
+        meta: { strong: true },
+        cell: ({ row }) => <Link to={`/contacts/${row.original.id}`}>{row.original.name}</Link>,
+      },
+      {
+        accessorKey: "organization_name",
+        header: "Organization",
+        cell: ({ row }) => (
+          <RecordLink to={`/organizations/${row.original.organization_id}`} name={row.original.organization_name} />
+        ),
+      },
       { accessorKey: "job_title", header: "Job title", cell: ({ row }) => <Plain value={row.original.job_title} /> },
       { accessorKey: "email", header: "Email", cell: ({ row }) => <Plain value={row.original.email} /> },
       { accessorKey: "phone", header: "Phone", cell: ({ row }) => <Plain value={row.original.phone} /> },
@@ -76,7 +95,9 @@ export function ContactsPage() {
               onRowClick={(c) => navigate(`/contacts/${c.id}`)}
               emptyMessage={filter === "all" ? "No contacts yet. Add one with New contact." : `No ${filter} contacts.`}
               toolbar={<StatusFilter contacts={data} value={filter} onChange={setFilter} />}
-              rowActions={(c) => <RowActions name={c.name} onEdit={() => setForm({ contact: c })} onDelete={() => setDeleting(c.id)} />}
+              rowActions={(c) => (
+                <RowActions name={c.name} onEdit={() => setForm({ contact: c })} onDelete={() => setDeleting(c.id)} />
+              )}
             />
           )}
         </Async>

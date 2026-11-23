@@ -57,19 +57,19 @@ def test_index_past_end_goes_last(client, make):
 
 
 def test_move_to_empty_column(client, make):
-    a, b, c = three(make)
+    a, _b, _c = three(make)
     move(client, a, "Lost", 0)
     assert make.column("Lost") == [a]
 
 
 def test_same_stage_move_makes_no_entry(client, make):
-    a, b, c = three(make)
+    a, _b, _c = three(make)
     move(client, a, "New", 0)
     assert make.get_deal(a)["timeline"] == []
 
 
 def test_other_stage_move_makes_one_entry(client, make):
-    a, b, c = three(make)
+    a, _b, _c = three(make)
     move(client, a, "Qualified", 0)
     timeline = make.get_deal(a)["timeline"]
     assert [e["description"] for e in timeline] == ["Moved from New to Qualified"]

@@ -17,7 +17,7 @@ def stamp() -> str:
     return now().isoformat(timespec="seconds")
 
 
-def iso(value) -> str | None:  # noqa: ANN001
+def iso(value) -> str | None:
     """Dates and datetimes to the strings we store."""
     if value is None:
         return None

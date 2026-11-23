@@ -13,7 +13,9 @@ function FollowUpItem({ a, onDone }: { a: Activity; onDone: (done: boolean) => v
         <div className="title">{a.description}</div>
         <div className="meta">
           <ActivityLinks activity={a} />
-          <span>{formatDate(a.follow_up_date)} · {followUpWording(a.follow_up_date!)}</span>
+          <span>
+            {formatDate(a.follow_up_date)} · {followUpWording(a.follow_up_date!)}
+          </span>
           <OverdueTag overdue={a.overdue} />
         </div>
       </div>
@@ -54,7 +56,11 @@ export function RecentActivity({ items }: { items: Activity[] }) {
         <li className="act" key={a.id}>
           <ActivityBadge activity={a} />
           <div className="text">
-            {a.deal_id ? <Link to={`/deals/${a.deal_id}`}>{a.description}</Link> : <Link to={`/contacts/${a.contact_id}`}>{a.description}</Link>}
+            {a.deal_id ? (
+              <Link to={`/deals/${a.deal_id}`}>{a.description}</Link>
+            ) : (
+              <Link to={`/contacts/${a.contact_id}`}>{a.description}</Link>
+            )}
           </div>
           <div className="meta">
             <span>{formatDateTime(a.occurred_at)}</span>

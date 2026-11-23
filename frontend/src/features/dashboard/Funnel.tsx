@@ -12,12 +12,19 @@ export function Funnel({ steps }: { steps: Dashboard["funnel"] }) {
     <div className="funnel" role="list" aria-label="Pipeline funnel">
       {steps.map((s) => (
         <div className="funnel-row" role="listitem" key={s.stage}>
-          <span className="stage-label"><StageDot stage={s.stage} />{s.stage}</span>
+          <span className="stage-label">
+            <StageDot stage={s.stage} />
+            {s.stage}
+          </span>
           <div className="funnel-bar-wrap">
             <div
               className="funnel-bar"
               title={`${s.stage}: ${money(s.value)} across ${s.count} deals`}
-              style={{ width: `${Math.max((s.value / max) * 100, 14)}%`, background: stageStyle(s.stage).color, color: ON_COLOR[s.stage] ?? "var(--midnight)" }}
+              style={{
+                width: `${Math.max((s.value / max) * 100, 14)}%`,
+                background: stageStyle(s.stage).color,
+                color: ON_COLOR[s.stage] ?? "var(--midnight)",
+              }}
             >
               {shortMoney(s.value)}
             </div>
@@ -39,9 +46,15 @@ export function OpenStack({ stages }: { stages: Dashboard["open_by_stage"] }) {
         <span className="mono">{money(total)}</span>
       </div>
       <div className="stack" role="img" aria-label="Open pipeline by stage">
-        {stages.filter((s) => s.value > 0).map((s) => (
-          <span key={s.stage} title={`${s.stage}: ${money(s.value)}`} style={{ flex: s.value, background: stageStyle(s.stage).color }} />
-        ))}
+        {stages
+          .filter((s) => s.value > 0)
+          .map((s) => (
+            <span
+              key={s.stage}
+              title={`${s.stage}: ${money(s.value)}`}
+              style={{ flex: s.value, background: stageStyle(s.stage).color }}
+            />
+          ))}
       </div>
       <div className="legend">
         {stages.map((s) => (

@@ -4,10 +4,19 @@ test("the app loads with its sidebar, and the backend answers through the proxy"
   await page.goto("/");
   await expect(page.getByText("Accountable", { exact: true })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link")).toHaveText([
-    "Dashboard", "Pipeline", "Deals", "Organizations", "Contacts",
+    "Dashboard",
+    "Pipeline",
+    "Deals",
+    "Organizations",
+    "Contacts",
   ]);
   const stages = await request.get("/api/stages");
   expect((await stages.json()).map((s: { name: string }) => s.name)).toEqual([
-    "New", "Qualified", "Proposal", "Negotiation", "Won", "Lost",
+    "New",
+    "Qualified",
+    "Proposal",
+    "Negotiation",
+    "Won",
+    "Lost",
   ]);
 });

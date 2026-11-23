@@ -50,9 +50,28 @@ export const sentBody = (fn: ReturnType<typeof mockFetch>, call = 0) => {
 };
 
 export const org = (id: number, name: string): OrganizationRow => ({
-  id, name, website: null, industry: null, notes: null, contact_count: 0, open_deal_count: 0, open_pipeline_value: 0,
+  id,
+  name,
+  website: null,
+  industry: null,
+  notes: null,
+  contact_count: 0,
+  open_deal_count: 0,
+  open_pipeline_value: 0,
 });
 
-export const contact = (id: number, name: string, organization_id: number | null, status: Contact["status"] = "lead"): Contact => ({
-  id, name, email: null, phone: null, job_title: null, organization_id, organization_name: null, status,
+export const contact = (
+  id: number,
+  name: string,
+  organization_id: number | null,
+  status: Contact["status"] = "lead",
+): Contact => ({
+  id,
+  name,
+  email: null,
+  phone: null,
+  job_title: null,
+  organization_id,
+  organization_name: null,
+  status,
 });

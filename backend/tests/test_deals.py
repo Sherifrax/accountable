@@ -116,5 +116,5 @@ def test_lists_have_names_and_counts(client, make):
     make.deal("Won", value=500, organization_id=org["id"], stage="Won")
     row = client.get("/api/organizations").json()[0]
     assert (row["contact_count"], row["open_deal_count"], row["open_pipeline_value"]) == (1, 1, 1000)
-    deal = [d for d in client.get("/api/deals").json() if d["name"] == "Open"][0]
+    deal = next(d for d in client.get("/api/deals").json() if d["name"] == "Open")
     assert deal["organization_name"] == "Northwind" and deal["contact_name"] == "Ann"

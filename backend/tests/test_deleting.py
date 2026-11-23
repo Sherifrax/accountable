@@ -40,7 +40,7 @@ def test_delete_contact_activities(client, make):  # R-DEL-3
     client.delete(f"/api/contacts/{contact['id']}")
     ids = [e["id"] for e in make.get_deal(deal["id"])["timeline"]]
     assert both["id"] in ids and only_contact["id"] not in ids
-    kept = [e for e in make.get_deal(deal["id"])["timeline"] if e["id"] == both["id"]][0]
+    kept = next(e for e in make.get_deal(deal["id"])["timeline"] if e["id"] == both["id"])
     assert kept["contact_id"] is None
 
 
@@ -73,7 +73,7 @@ def test_activity_linked_to_both_goes_when_second_is_deleted(client, make, engin
 
 
 def test_deleting_a_deal_closes_the_gap(client, make):
-    a, b, c = (make.deal(n)["id"] for n in "abc")
+    _a, b, _c = (make.deal(n)["id"] for n in "abc")
     client.delete(f"/api/deals/{b}")
     deals = [d for d in client.get("/api/deals").json()]
     assert sorted(d["position"] for d in deals) == [0, 1]
@@ -86,17 +86,25 @@ def test_impact_counts_match_what_happens(client, make, engine):  # R-DEL-4
     deal = make.deal(organization_id=org["id"], contact_id=contact["id"])
     make.deal("Other", organization_id=org["id"])
     assert client.get(f"/api/organizations/{org['id']}/delete-impact").json() == {
-        "name": "Northwind", "contacts": 2, "deals": 2,
+        "name": "Northwind",
+        "contacts": 2,
+        "deals": 2,
     }
     make.activity(contact_id=contact["id"])
     make.activity(contact_id=contact["id"])
     make.activity(deal_id=deal["id"])  # linked to deal + contact
     client.patch(f"/api/deals/{deal['id']}", json={"stage": "Proposal"})
     assert client.get(f"/api/contacts/{contact['id']}/delete-impact").json() == {
-        "name": "Ann", "deals": 1, "activities_deleted": 2, "activities_kept": 2,
+        "name": "Ann",
+        "deals": 1,
+        "activities_deleted": 2,
+        "activities_kept": 2,
     }
     assert client.get(f"/api/deals/{deal['id']}/delete-impact").json() == {
-        "name": "Deal", "stage_changes": 1, "activities_deleted": 0, "activities_kept": 1,
+        "name": "Deal",
+        "stage_changes": 1,
+        "activities_deleted": 0,
+        "activities_kept": 1,
     }
     before = count_activities(engine)
     client.delete(f"/api/contacts/{contact['id']}")

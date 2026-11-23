@@ -5,7 +5,7 @@ import type { Deal } from "../../api/types";
 import { mockFetch, renderWithApp, sentBody } from "../../test-utils";
 import { ActivityForm } from "./ActivityForm";
 
-const deal = (id: number, name: string) => ({ id, name } as Deal);
+const deal = (id: number, name: string) => ({ id, name }) as Deal;
 
 describe("ActivityForm", () => {
   it("defaults the date and time to now (R-ACT-1)", () => {
@@ -28,7 +28,12 @@ describe("ActivityForm", () => {
     await userEvent.type(screen.getByLabelText("Description"), "Spoke about pricing");
     await userEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    expect(sentBody(fetchMock)).toMatchObject({ type: "note", description: "Spoke about pricing", follow_up_date: null, contact_id: 1 });
+    expect(sentBody(fetchMock)).toMatchObject({
+      type: "note",
+      description: "Spoke about pricing",
+      follow_up_date: null,
+      contact_id: 1,
+    });
   });
 
   it("sends a follow-up date when given", async () => {
@@ -43,8 +48,12 @@ describe("ActivityForm", () => {
   });
 
   it("from a contact, lists only that contact's deals (R-ACT-1)", () => {
-    renderWithApp(<ActivityForm contactId={1} contactDeals={[deal(5, "Deal five"), deal(6, "Deal six")]} onClose={() => {}} />);
-    const options = Array.from((screen.getByLabelText("Deal (optional)") as HTMLSelectElement).options).map((o) => o.text);
+    renderWithApp(
+      <ActivityForm contactId={1} contactDeals={[deal(5, "Deal five"), deal(6, "Deal six")]} onClose={() => {}} />,
+    );
+    const options = Array.from((screen.getByLabelText("Deal (optional)") as HTMLSelectElement).options).map(
+      (o) => o.text,
+    );
     expect(options).toEqual(["None", "Deal five", "Deal six"]);
   });
 

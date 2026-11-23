@@ -15,8 +15,7 @@ type Props = {
 export function DeleteRecordDialog({ kind, id, onClose, onDeleted }: Props) {
   const impact = useDeleteImpact(kind, id);
   const remove = useDeleteRecord(kind);
-  const target =
-    id !== null && impact.data ? ({ kind: SINGULAR[kind], impact: impact.data } as DeleteTarget) : null;
+  const target = id !== null && impact.data ? ({ kind: SINGULAR[kind], impact: impact.data } as DeleteTarget) : null;
 
   return (
     <ConfirmDelete

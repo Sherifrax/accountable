@@ -1,5 +1,5 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useNotify } from "../lib/notify";
 import { api, ApiError } from "./client";
 import type {
   Activity,
@@ -60,15 +60,13 @@ export const useOrganizations = () =>
   useQuery({ queryKey: keys.organizations, queryFn: () => api<OrganizationRow[]>("/organizations") });
 export const useOrganization = (id: number) =>
   useQuery({ queryKey: keys.organization(id), queryFn: () => api<OrganizationDetail>(`/organizations/${id}`) });
-export const useContacts = () =>
-  useQuery({ queryKey: keys.contacts, queryFn: () => api<Contact[]>("/contacts") });
+export const useContacts = () => useQuery({ queryKey: keys.contacts, queryFn: () => api<Contact[]>("/contacts") });
 export const useContact = (id: number) =>
   useQuery({ queryKey: keys.contact(id), queryFn: () => api<ContactDetail>(`/contacts/${id}`) });
 export const useDeals = () => useQuery({ queryKey: keys.deals, queryFn: () => api<Deal[]>("/deals") });
 export const useDeal = (id: number) =>
   useQuery({ queryKey: keys.deal(id), queryFn: () => api<DealDetail>(`/deals/${id}`) });
-export const useDashboard = () =>
-  useQuery({ queryKey: keys.dashboard, queryFn: () => api<Dashboard>("/dashboard") });
+export const useDashboard = () => useQuery({ queryKey: keys.dashboard, queryFn: () => api<Dashboard>("/dashboard") });
 
 export type ImpactKind = "organizations" | "contacts" | "deals";
 type ImpactOf = { organizations: OrganizationImpact; contacts: ContactImpact; deals: DealImpact };
@@ -85,32 +83,39 @@ export function useDeleteImpact<K extends ImpactKind>(kind: K, id: number | null
 
 function useWrite<TVars, TResult>(run: (vars: TVars) => Promise<TResult>, success?: string) {
   const qc = useQueryClient();
+  const notify = useNotify();
   return useMutation({
     mutationFn: run,
     onSuccess: async () => {
       await invalidateRecords(qc);
-      if (success) toast.success(success);
+      if (success) notify.success(success);
     },
-    onError: (error) => toast.error(messageOf(error)),
+    onError: (error) => notify.error(messageOf(error)),
   });
 }
 
 export const useSaveOrganization = () =>
   useWrite(
     ({ id, input }: { id?: number; input: Partial<OrganizationInput> }) =>
-      id ? api<Organization>(`/organizations/${id}`, { method: "PATCH", body: input }) : api<Organization>("/organizations", { method: "POST", body: input }),
+      id
+        ? api<Organization>(`/organizations/${id}`, { method: "PATCH", body: input })
+        : api<Organization>("/organizations", { method: "POST", body: input }),
     "Organization saved",
   );
 export const useSaveContact = () =>
   useWrite(
     ({ id, input }: { id?: number; input: Partial<ContactInput> }) =>
-      id ? api<Contact>(`/contacts/${id}`, { method: "PATCH", body: input }) : api<Contact>("/contacts", { method: "POST", body: input }),
+      id
+        ? api<Contact>(`/contacts/${id}`, { method: "PATCH", body: input })
+        : api<Contact>("/contacts", { method: "POST", body: input }),
     "Contact saved",
   );
 export const useSaveDeal = () =>
   useWrite(
     ({ id, input }: { id?: number; input: Partial<DealInput> }) =>
-      id ? api<Deal>(`/deals/${id}`, { method: "PATCH", body: input }) : api<Deal>("/deals", { method: "POST", body: input }),
+      id
+        ? api<Deal>(`/deals/${id}`, { method: "PATCH", body: input })
+        : api<Deal>("/deals", { method: "POST", body: input }),
     "Deal saved",
   );
 const SINGULAR = { organizations: "Organization", contacts: "Contact", deals: "Deal" } as const;

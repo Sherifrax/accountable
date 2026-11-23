@@ -25,14 +25,44 @@ export function DealsPage() {
 
   const columns = useMemo<Column<Deal>[]>(
     () => [
-      { accessorKey: "name", header: "Name", meta: { strong: true }, cell: ({ row }) => <Link to={`/deals/${row.original.id}`}>{row.original.name}</Link> },
-      { accessorKey: "organization_name", header: "Organization", cell: ({ row }) => <RecordLink to={`/organizations/${row.original.organization_id}`} name={row.original.organization_name} /> },
-      { accessorKey: "contact_name", header: "Contact", cell: ({ row }) => <RecordLink to={`/contacts/${row.original.contact_id}`} name={row.original.contact_name} /> },
+      {
+        accessorKey: "name",
+        header: "Name",
+        meta: { strong: true },
+        cell: ({ row }) => <Link to={`/deals/${row.original.id}`}>{row.original.name}</Link>,
+      },
+      {
+        accessorKey: "organization_name",
+        header: "Organization",
+        cell: ({ row }) => (
+          <RecordLink to={`/organizations/${row.original.organization_id}`} name={row.original.organization_name} />
+        ),
+      },
+      {
+        accessorKey: "contact_name",
+        header: "Contact",
+        cell: ({ row }) => <RecordLink to={`/contacts/${row.original.contact_id}`} name={row.original.contact_name} />,
+      },
       // Stages sort in pipeline order, not alphabetically.
-      { id: "stage", accessorFn: (d) => STAGE_NAMES.indexOf(d.stage as (typeof STAGE_NAMES)[number]), header: "Stage", cell: ({ row }) => <StageLabel stage={row.original.stage} /> },
+      {
+        id: "stage",
+        accessorFn: (d) => STAGE_NAMES.indexOf(d.stage as (typeof STAGE_NAMES)[number]),
+        header: "Stage",
+        cell: ({ row }) => <StageLabel stage={row.original.stage} />,
+      },
       { accessorKey: "value", header: "Value", meta: { align: "num" }, cell: ({ row }) => money(row.original.value) },
-      { accessorKey: "probability", header: "Probability", meta: { align: "num" }, cell: ({ row }) => `${row.original.probability}%` },
-      { accessorKey: "expected_revenue", header: "Expected revenue", meta: { align: "num" }, cell: ({ row }) => money(row.original.expected_revenue) },
+      {
+        accessorKey: "probability",
+        header: "Probability",
+        meta: { align: "num" },
+        cell: ({ row }) => `${row.original.probability}%`,
+      },
+      {
+        accessorKey: "expected_revenue",
+        header: "Expected revenue",
+        meta: { align: "num" },
+        cell: ({ row }) => money(row.original.expected_revenue),
+      },
       {
         accessorKey: "close_date",
         header: "Close date",
@@ -62,12 +92,24 @@ export function DealsPage() {
               searchPlaceholder="Search deals"
               data={data}
               columns={columns}
-              visibleText={(d) => [d.name, d.organization_name, d.contact_name, d.stage, money(d.value), `${d.probability}%`, money(d.expected_revenue), formatDate(d.close_date), d.late ? "Late" : null]}
+              visibleText={(d) => [
+                d.name,
+                d.organization_name,
+                d.contact_name,
+                d.stage,
+                money(d.value),
+                `${d.probability}%`,
+                money(d.expected_revenue),
+                formatDate(d.close_date),
+                d.late ? "Late" : null,
+              ]}
               defaultSort={{ id: "close_date" }}
               rowKey={(d) => d.id}
               onRowClick={(d) => navigate(`/deals/${d.id}`)}
               emptyMessage="No deals yet. Add one with New deal."
-              rowActions={(d) => <RowActions name={d.name} onEdit={() => setForm({ deal: d })} onDelete={() => setDeleting(d.id)} />}
+              rowActions={(d) => (
+                <RowActions name={d.name} onEdit={() => setForm({ deal: d })} onDelete={() => setDeleting(d.id)} />
+              )}
             />
           )}
         </Async>

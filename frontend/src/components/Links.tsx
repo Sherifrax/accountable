@@ -4,7 +4,11 @@ import { websiteUrl } from "../lib/format";
 /** A link to a record, or "None" when the record is missing or was deleted (R-REC-5). */
 export function RecordLink({ to, name }: { to: string; name: string | null | undefined }) {
   if (!name) return <span className="link-none">None</span>;
-  return <Link to={to} onClick={(e) => e.stopPropagation()}>{name}</Link>;
+  return (
+    <Link to={to} onClick={(e) => e.stopPropagation()}>
+      {name}
+    </Link>
+  );
 }
 
 export function WebsiteLink({ site }: { site: string | null | undefined }) {

@@ -1,8 +1,6 @@
 """R-DASH-1 to R-DASH-6, against fixed data. Today is 2026-06-15."""
 
 
-
-
 def dash(client):
     r = client.get("/api/dashboard")
     assert r.status_code == 200
@@ -51,7 +49,7 @@ def test_months_by_close_date(client, make):  # R-DASH-2, R-DASH-3
     make.deal("d", value=100, stage="Lost", close_date="2026-01-10")
     make.deal("open", value=9999, close_date="2026-06-10")
     months = dash(client)["months"]
-    assert [m["month"] for m in months][0] == "2025-07" and months[-1]["month"] == "2026-06"
+    assert next(m["month"] for m in months) == "2025-07" and months[-1]["month"] == "2026-06"
     by = {m["month"]: m for m in months}
     assert by["2026-06"] == {"month": "2026-06", "revenue": 3500, "won": 2, "lost": 0}
     assert by["2025-07"]["revenue"] == 700
@@ -110,8 +108,14 @@ def test_open_pipeline_by_stage(client, make):  # R-DASH-4
 def test_follow_ups(client, make):  # R-DASH-5
     c = make.contact("Ann")
     deal = make.deal("Big", contact_id=c["id"])
-    for desc, when in [("later", "2026-06-23"), ("edge", "2026-06-22"), ("today", "2026-06-15"),
-                       ("old", "2026-06-01"), ("recent", "2026-06-14"), ("soon", "2026-06-18")]:
+    for desc, when in [
+        ("later", "2026-06-23"),
+        ("edge", "2026-06-22"),
+        ("today", "2026-06-15"),
+        ("old", "2026-06-01"),
+        ("recent", "2026-06-14"),
+        ("soon", "2026-06-18"),
+    ]:
         make.activity(contact_id=c["id"], description=desc, follow_up_date=when)
     done = make.activity(deal_id=deal["id"], description="done", follow_up_date="2026-06-10")
     client.patch(f"/api/activities/{done['id']}", json={"done": True})

@@ -10,45 +10,54 @@ export type DeleteTarget =
 
 const CANT_UNDO = "This can't be undone.";
 
+function organizationMessage({ name, contacts, deals }: OrganizationImpact): string {
+  const parts = [contacts > 0 ? plural(contacts, "contact") : null, deals > 0 ? plural(deals, "deal") : null].filter(
+    Boolean,
+  );
+  const effect =
+    parts.length === 0
+      ? "It has no contacts or deals."
+      : `Its ${parts.join(" and ")} will be kept, with no organization.`;
+  return `Delete ${name}? ${effect} ${CANT_UNDO}`;
+}
+
+function contactMessage({ name, deals, activities_deleted, activities_kept }: ContactImpact): string {
+  const sentences: string[] = [];
+  if (deals > 0) sentences.push(`Their ${plural(deals, "deal")} will be kept, with no contact.`);
+  if (activities_deleted > 0)
+    sentences.push(`${plural(activities_deleted, "activity", "activities")} linked only to them will be deleted.`);
+  if (activities_kept > 0)
+    sentences.push(
+      `${plural(activities_kept, "activity", "activities")} also linked to a deal will be kept, with no contact.`,
+    );
+  if (sentences.length === 0) sentences.push("They have no deals or activities.");
+  return `Delete ${name}? ${sentences.join(" ")} ${CANT_UNDO}`;
+}
+
+function dealMessage({ name, stage_changes, activities_deleted, activities_kept }: DealImpact): string {
+  const gone = [
+    stage_changes > 0 ? plural(stage_changes, "stage change") : null,
+    activities_deleted > 0 ? plural(activities_deleted, "activity", "activities") : null,
+  ].filter(Boolean);
+  const sentences: string[] = [];
+  if (gone.length > 0) sentences.push(`Its ${gone.join(" and ")} will be deleted.`);
+  if (activities_kept > 0)
+    sentences.push(
+      `${plural(activities_kept, "activity", "activities")} also linked to a contact will be kept, with no deal.`,
+    );
+  if (sentences.length === 0) sentences.push("It has no activities.");
+  return `Delete ${name}? ${sentences.join(" ")} ${CANT_UNDO}`;
+}
+
 /** The exact consequence wording for each kind, with counts (R-DEL-4). */
 export function deleteMessage(target: DeleteTarget): string {
   switch (target.kind) {
-    case "organization": {
-      const { name, contacts, deals } = target.impact;
-      const parts = [
-        contacts > 0 ? plural(contacts, "contact") : null,
-        deals > 0 ? plural(deals, "deal") : null,
-      ].filter(Boolean);
-      const effect =
-        parts.length === 0
-          ? "It has no contacts or deals."
-          : `Its ${parts.join(" and ")} will be kept, with no organization.`;
-      return `Delete ${name}? ${effect} ${CANT_UNDO}`;
-    }
-    case "contact": {
-      const { name, deals, activities_deleted, activities_kept } = target.impact;
-      const sentences: string[] = [];
-      if (deals > 0) sentences.push(`Their ${plural(deals, "deal")} will be kept, with no contact.`);
-      if (activities_deleted > 0)
-        sentences.push(`${plural(activities_deleted, "activity", "activities")} linked only to them will be deleted.`);
-      if (activities_kept > 0)
-        sentences.push(`${plural(activities_kept, "activity", "activities")} also linked to a deal will be kept, with no contact.`);
-      if (sentences.length === 0) sentences.push("They have no deals or activities.");
-      return `Delete ${name}? ${sentences.join(" ")} ${CANT_UNDO}`;
-    }
-    case "deal": {
-      const { name, stage_changes, activities_deleted, activities_kept } = target.impact;
-      const gone = [
-        stage_changes > 0 ? plural(stage_changes, "stage change") : null,
-        activities_deleted > 0 ? plural(activities_deleted, "activity", "activities") : null,
-      ].filter(Boolean);
-      const sentences: string[] = [];
-      if (gone.length > 0) sentences.push(`Its ${gone.join(" and ")} will be deleted.`);
-      if (activities_kept > 0)
-        sentences.push(`${plural(activities_kept, "activity", "activities")} also linked to a contact will be kept, with no deal.`);
-      if (sentences.length === 0) sentences.push("It has no activities.");
-      return `Delete ${name}? ${sentences.join(" ")} ${CANT_UNDO}`;
-    }
+    case "organization":
+      return organizationMessage(target.impact);
+    case "contact":
+      return contactMessage(target.impact);
+    case "deal":
+      return dealMessage(target.impact);
   }
 }
 

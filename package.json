@@ -1,18 +1,36 @@
 {
   "name": "accountable",
-  "private": true,
   "version": "0.1.0",
-  "workspaces": ["frontend"],
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
     "dev": "concurrently -n backend,frontend -c cyan,magenta \"uv run uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload\" \"npm run dev -w frontend\"",
     "seed": "uv run python -m backend.app.seed",
     "test": "npm run test:front && npm run test:back && npm run test:e2e",
     "test:front": "npm run test -w frontend",
     "test:back": "uv run pytest -q",
-    "test:e2e": "playwright test --config e2e/playwright.config.ts"
+    "test:e2e": "playwright test --config e2e/playwright.config.ts",
+    "check": "node scripts/check.mjs",
+    "check:quick": "node scripts/check.mjs --quick",
+    "format": "prettier --write . && uv run --frozen ruff check --select I --fix --quiet && uv run --frozen ruff format"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.50.0",
-    "concurrently": "^9.0.0"
+    "concurrently": "^9.0.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "lefthook": "^2.2.2",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.73.0"
+  },
+  "allowScripts": {
+    "lefthook": true
   }
 }

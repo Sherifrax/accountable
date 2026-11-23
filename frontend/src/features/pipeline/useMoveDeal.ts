@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { api } from "../../api/client";
 import { invalidateRecords, keys } from "../../api/hooks";
 import type { Deal, Stage } from "../../api/types";
 import { todayIso } from "../../lib/format";
+import { useNotify } from "../../lib/notify";
 import { applyMove } from "./moveDeal";
 
 type Move = { id: number; stage: string; index: number };
@@ -14,8 +14,10 @@ type Move = { id: number; stage: string; index: number };
  */
 export function useMoveDeal() {
   const qc = useQueryClient();
+  const notify = useNotify();
   return useMutation({
-    mutationFn: (move: Move) => api<Deal>(`/deals/${move.id}/move`, { method: "POST", body: { stage: move.stage, index: move.index } }),
+    mutationFn: (move: Move) =>
+      api<Deal>(`/deals/${move.id}/move`, { method: "POST", body: { stage: move.stage, index: move.index } }),
     onMutate: async (move) => {
       await qc.cancelQueries({ queryKey: keys.deals });
       const previous = qc.getQueryData<Deal[]>(keys.deals);
@@ -25,7 +27,7 @@ export function useMoveDeal() {
     },
     onError: (_error, _move, context) => {
       if (context?.previous) qc.setQueryData(keys.deals, context.previous);
-      toast.error("Couldn't save the move. Try again.");
+      notify.error("Couldn't save the move. Try again.");
     },
     onSettled: () => invalidateRecords(qc),
   });

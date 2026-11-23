@@ -69,8 +69,11 @@ def delete_deal(conn, deal_id: int) -> None:
     conn.execute(delete(activities).where(gone))
     conn.execute(delete(deals).where(deals.c.id == deal_id))
     # Close the gap the deal leaves in its column.
-    remaining = [r[0] for r in conn.execute(
-        select(deals.c.id).where(deals.c.stage == row["stage"]).order_by(deals.c.position, deals.c.id)
-    )]
+    remaining = [
+        r[0]
+        for r in conn.execute(
+            select(deals.c.id).where(deals.c.stage == row["stage"]).order_by(deals.c.position, deals.c.id)
+        )
+    ]
     for position, other in enumerate(remaining):
         conn.execute(deals.update().where(deals.c.id == other).values(position=position))

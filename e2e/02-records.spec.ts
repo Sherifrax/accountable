@@ -1,8 +1,11 @@
+import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import type { Page } from "@playwright/test";
 import { API, askFreshBackend, expect, test } from "./fixtures";
 import { TEST_DB } from "./playwright.config";
+
+const HERE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 const row = (page: Page, text: string) => page.getByRole("table").getByRole("row").filter({ hasText: text });
 const dialog = (page: Page) => page.getByRole("dialog");
@@ -54,7 +57,9 @@ test("organizations: add, search, sort, edit, restart, delete", async ({ page, r
   await expect(row(page, "Zephyr Test Co")).toBeVisible();
 
   // An organization with people and deals: they are kept, with no organization (R-DEL-1).
-  const orgs: { id: number; name: string; contact_count: number; open_deal_count: number }[] = await (await request.get(`${API}/organizations`)).json();
+  const orgs: { id: number; name: string; contact_count: number; open_deal_count: number }[] = await (
+    await request.get(`${API}/organizations`)
+  ).json();
   const target = orgs.find((o) => o.name === "Northwind Logistics")!;
   const impact = await (await request.get(`${API}/organizations/${target.id}/delete-impact`)).json();
   await search(page, "Search organizations", "northwind");
@@ -65,16 +70,25 @@ test("organizations: add, search, sort, edit, restart, delete", async ({ page, r
   await dialog(page).getByRole("button", { name: "Delete organization" }).click();
   await expect(page.getByText("Organization deleted")).toBeVisible();
   await expect(page.getByText("No organizations match 'northwind'.")).toBeVisible();
-  const contacts: { organization_id: number | null; name: string }[] = await (await request.get(`${API}/contacts`)).json();
+  const contacts: { organization_id: number | null; name: string }[] = await (
+    await request.get(`${API}/contacts`)
+  ).json();
   expect(contacts).toHaveLength(40);
   expect(contacts.filter((c) => c.organization_id === null).length).toBeGreaterThanOrEqual(impact.contacts);
   await page.goto("/deals");
   await expect(row(page, "Route planning licences")).toContainText("None");
 });
 
-test("contacts: add a lead, a qualified contact and a customer; search, sort, edit, restart, delete", async ({ page, request }) => {
+test("contacts: add a lead, a qualified contact and a customer; search, sort, edit, restart, delete", async ({
+  page,
+  request,
+}) => {
   await page.goto("/contacts");
-  for (const [name, status] of [["Test Lead", "Lead"], ["Test Qualified", "Qualified"], ["Test Customer", "Customer"]]) {
+  for (const [name, status] of [
+    ["Test Lead", "Lead"],
+    ["Test Qualified", "Qualified"],
+    ["Test Customer", "Customer"],
+  ]) {
     await page.getByRole("button", { name: "New contact" }).click();
     await dialog(page).getByLabel("Name").fill(name);
     await dialog(page).getByLabel("Status").selectOption({ label: status });
@@ -113,7 +127,8 @@ test("contacts: add a lead, a qualified contact and a customer; search, sort, ed
 
   // Deleting a contact keeps their deals, with no contact (R-DEL-2, R-DEL-3, R-DEL-4).
   const all: { id: number; name: string }[] = await (await request.get(`${API}/contacts`)).json();
-  let withDeals: { id: number; name: string; deals: number; activities_deleted: number; activities_kept: number } | undefined;
+  let withDeals:
+    { id: number; name: string; deals: number; activities_deleted: number; activities_kept: number } | undefined;
   for (const c of all) {
     const impact = await (await request.get(`${API}/contacts/${c.id}/delete-impact`)).json();
     if (impact.deals > 0 && impact.activities_deleted > 0 && impact.activities_kept > 0) {
@@ -203,7 +218,7 @@ test("the reset command brings the sample data back", async ({ page, request }) 
 
   // `npm run seed`, pointed at the test database. The app keeps running.
   execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "seed"], {
-    cwd: path.resolve(__dirname, ".."),
+    cwd: path.resolve(HERE_DIR, ".."),
     env: { ...process.env, ACCOUNTABLE_DB: TEST_DB },
     stdio: "pipe",
     shell: process.platform === "win32",
@@ -214,7 +229,9 @@ test("the reset command brings the sample data back", async ({ page, request }) 
 });
 
 test("the edit forms start on the record's current organization and contact", async ({ page, request }) => {
-  const deal = (await (await request.get(`${API}/deals`)).json()).find((d: { organization_id: number | null; contact_id: number | null }) => d.organization_id && d.contact_id);
+  const deal = (await (await request.get(`${API}/deals`)).json()).find(
+    (d: { organization_id: number | null; contact_id: number | null }) => d.organization_id && d.contact_id,
+  );
   await page.goto(`/deals/${deal.id}`);
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   await expect(dialog(page).getByLabel("Organization")).toHaveValue(String(deal.organization_id));

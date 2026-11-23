@@ -13,7 +13,10 @@ const schema = z.object({
   status: z.enum(["lead", "qualified", "customer"], { error: "Choose a status" }),
   organization_id: z.string(),
   job_title: z.string().trim(),
-  email: z.string().trim().refine((v) => v === "" || EMAIL.test(v), "Email doesn't look right"),
+  email: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || EMAIL.test(v), "Email doesn't look right"),
   phone: z.string().trim(),
 });
 type Values = z.infer<typeof schema>;
@@ -32,6 +35,28 @@ export function ContactForm(props: Props) {
   return organizations.data !== undefined || organizations.isError ? <ContactFormFields {...props} /> : null;
 }
 
+function contactDefaults(contact: Props["contact"], organizationId?: number): Values {
+  return {
+    name: contact?.name ?? "",
+    status: (contact?.status ?? "lead") as ContactStatus,
+    organization_id: String(contact?.organization_id ?? organizationId ?? ""),
+    job_title: contact?.job_title ?? "",
+    email: contact?.email ?? "",
+    phone: contact?.phone ?? "",
+  };
+}
+
+function contactInput(v: Values) {
+  return {
+    name: v.name,
+    status: v.status,
+    organization_id: v.organization_id ? Number(v.organization_id) : null,
+    job_title: v.job_title || null,
+    email: v.email || null,
+    phone: v.phone || null,
+  };
+}
+
 function ContactFormFields({ contact, organizationId, onClose, onSaved }: Props) {
   const save = useSaveContact();
   const organizations = useOrganizations();
@@ -41,29 +66,12 @@ function ContactFormFields({ contact, organizationId, onClose, onSaved }: Props)
     formState: { errors },
   } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      name: contact?.name ?? "",
-      status: (contact?.status ?? "lead") as ContactStatus,
-      organization_id: String(contact?.organization_id ?? organizationId ?? ""),
-      job_title: contact?.job_title ?? "",
-      email: contact?.email ?? "",
-      phone: contact?.phone ?? "",
-    },
+    defaultValues: contactDefaults(contact, organizationId),
   });
 
   const submit = handleSubmit(async (v) => {
     try {
-      const saved = await save.mutateAsync({
-        id: contact?.id,
-        input: {
-          name: v.name,
-          status: v.status,
-          organization_id: v.organization_id ? Number(v.organization_id) : null,
-          job_title: v.job_title || null,
-          email: v.email || null,
-          phone: v.phone || null,
-        },
-      });
+      const saved = await save.mutateAsync({ id: contact?.id, input: contactInput(v) });
       onClose();
       onSaved?.(saved);
     } catch {
@@ -72,9 +80,14 @@ function ContactFormFields({ contact, organizationId, onClose, onSaved }: Props)
   });
 
   return (
-    <FormDialog title={contact ? "Edit contact" : "New contact"} onClose={onClose} onSubmit={submit} submitting={save.isPending}>
+    <FormDialog
+      title={contact ? "Edit contact" : "New contact"}
+      onClose={onClose}
+      onSubmit={submit}
+      submitting={save.isPending}
+    >
       <FormField label="Name" error={errors.name?.message}>
-        <input {...register("name")} autoFocus autoComplete="off" />
+        <input {...register("name")} autoComplete="off" />
       </FormField>
       <FormField label="Status" half error={errors.status?.message}>
         <Select {...register("status")}>

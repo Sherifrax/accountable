@@ -19,7 +19,13 @@ describe("Tag", () => {
   });
 
   it("names each contact status", () => {
-    render(<><StatusTag status="lead" /><StatusTag status="qualified" /><StatusTag status="customer" /></>);
+    render(
+      <>
+        <StatusTag status="lead" />
+        <StatusTag status="qualified" />
+        <StatusTag status="customer" />
+      </>,
+    );
     expect(screen.getAllByText(/Lead|Qualified|Customer/)).toHaveLength(3);
   });
 });

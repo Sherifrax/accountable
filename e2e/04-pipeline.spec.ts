@@ -1,14 +1,25 @@
 import type { Locator, Page } from "@playwright/test";
 import { API, expect, test } from "./fixtures";
 
-type Deal = { id: number; name: string; stage: string; value: number; probability: number; position: number; close_date: string | null; late: boolean; expected_revenue: number };
+type Deal = {
+  id: number;
+  name: string;
+  stage: string;
+  value: number;
+  probability: number;
+  position: number;
+  close_date: string | null;
+  late: boolean;
+  expected_revenue: number;
+};
 
 const dollars = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const column = (page: Page, stage: string) => page.getByRole("region", { name: `${stage} column` });
 const card = (page: Page, deal: Deal) => page.getByTestId(`card-${deal.id}`);
 const getDeals = async (request: { get: (url: string) => Promise<{ json: () => Promise<unknown> }> }) =>
   (await (await request.get(`${API}/deals`)).json()) as Deal[];
-const inColumn = (deals: Deal[], stage: string) => deals.filter((d) => d.stage === stage).sort((a, b) => a.position - b.position);
+const inColumn = (deals: Deal[], stage: string) =>
+  deals.filter((d) => d.stage === stage).sort((a, b) => a.position - b.position);
 
 /** A mouse drag in small steps, so the drag library sees real movement. */
 async function drag(page: Page, source: Locator, target: Locator, where: "center" | "top" | "bottom" = "center") {
@@ -29,7 +40,10 @@ async function drag(page: Page, source: Locator, target: Locator, where: "center
 const names = async (page: Page, stage: string) =>
   (await column(page, stage).locator(".card .name").allTextContents()).map((n) => n.trim());
 
-test("dragging a card to another column changes its stage and probability, and the totals move at once", async ({ page, request }) => {
+test("dragging a card to another column changes its stage and probability, and the totals move at once", async ({
+  page,
+  request,
+}) => {
   const deals = await getDeals(request);
   const moving = inColumn(deals, "New")[1];
   await page.goto("/pipeline");
@@ -53,7 +67,9 @@ test("dragging a card to another column changes its stage and probability, and t
   const newProposalProbability = 50;
   const proposalBefore = inColumn(deals, "Proposal");
   await expect(column(page, "Proposal").getByTestId(`card-${moving.id}`)).toBeVisible();
-  await expect(page.getByTestId("total-Proposal")).toHaveText(dollars(proposalBefore.reduce((s, d) => s + d.value, 0) + moving.value));
+  await expect(page.getByTestId("total-Proposal")).toHaveText(
+    dollars(proposalBefore.reduce((s, d) => s + d.value, 0) + moving.value),
+  );
   await expect(page.getByTestId("total-New")).toHaveText(
     dollars(inColumn(deals, "New").reduce((s, d) => s + d.value, 0) - moving.value),
   );
@@ -100,7 +116,9 @@ test("a card moved up and down in its own column stays there after a refresh", a
 
   // The top card, dropped on the lower half of the third card.
   await drag(page, card(page, col[0]), card(page, col[2]), "bottom");
-  await expect.poll(async () => inColumn(await getDeals(request), "New").map((d) => d.name)).toEqual([before[1], before[2], before[0], ...before.slice(3)]);
+  await expect
+    .poll(async () => inColumn(await getDeals(request), "New").map((d) => d.name))
+    .toEqual([before[1], before[2], before[0], ...before.slice(3)]);
   await page.reload();
   expect(await names(page, "New")).toEqual([before[1], before[2], before[0], ...before.slice(3)]);
 
@@ -164,7 +182,11 @@ test("a click on a card opens the deal", async ({ page, request }) => {
   await expect(page).toHaveURL(new RegExp(`/deals/${deal.id}$`));
 });
 
-test("when the server refuses a move, the card goes back with a message", async ({ page, request, consoleProblems }) => {
+test("when the server refuses a move, the card goes back with a message", async ({
+  page,
+  request,
+  consoleProblems,
+}) => {
   const deals = await getDeals(request);
   const moving = inColumn(deals, "New")[0];
   await page.goto("/pipeline");

@@ -24,7 +24,7 @@ def _query():
     )
 
 
-def activity_out(row) -> dict:  # noqa: ANN001
+def activity_out(row) -> dict:
     follow_up = row["follow_up_date"]
     done = bool(row["done"])
     return {

@@ -26,7 +26,7 @@ class _Base(BaseModel):
 
     @field_validator("*", mode="before")
     @classmethod
-    def _strip(cls, v):  # noqa: ANN001
+    def _strip(cls, v):
         return v.strip() if isinstance(v, str) else v
 
     @model_validator(mode="after")
@@ -40,7 +40,7 @@ class _Base(BaseModel):
 class _EmailMixin(BaseModel):
     @field_validator("email", check_fields=False)
     @classmethod
-    def _email(cls, v):  # noqa: ANN001
+    def _email(cls, v):
         if v and not EMAIL_RE.match(v):
             raise ValueError("Email doesn't look right")
         return v or None
@@ -96,7 +96,7 @@ class ContactUpdate(_EmailMixin, _Base):
 class _StageMixin(BaseModel):
     @field_validator("stage", check_fields=False)
     @classmethod
-    def _stage(cls, v):  # noqa: ANN001
+    def _stage(cls, v):
         if v is not None and v not in STAGE_NAMES:
             raise ValueError(f"Stage must be one of: {', '.join(STAGE_NAMES)}")
         return v

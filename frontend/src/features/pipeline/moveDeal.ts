@@ -24,7 +24,12 @@ export function openDeals(deals: Deal[]): Deal[] {
  * totals change the moment the card is dropped (R-PIPE-5). The server stays the owner of the
  * order: after it replies, the real data replaces this.
  */
-export function applyMove(deals: Deal[], move: { id: number; stage: string; index: number }, stages: Stage[], today: string): Deal[] {
+export function applyMove(
+  deals: Deal[],
+  move: { id: number; stage: string; index: number },
+  stages: Stage[],
+  today: string,
+): Deal[] {
   const deal = deals.find((d) => d.id === move.id);
   if (!deal) return deals;
   const changed = deal.stage !== move.stage;
