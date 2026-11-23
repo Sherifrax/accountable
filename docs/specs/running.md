@@ -1,8 +1,9 @@
 # 2.1 Running the app
 
-- **R-RUN-1** `npm run dev` starts the backend on `http://localhost:8000` and the frontend on `http://localhost:5173`. The terminal prints the address to open. Opening it shows the dashboard.
-- **R-RUN-2** `npm run seed` deletes all data and loads the sample data. It works whether or not the app is running.
-- **R-RUN-3** On first start, if the database file doesn't exist, the backend creates it and loads the sample data.
-- **R-RUN-4** `npm test` runs the frontend, backend and end-to-end tests, and fails if any test fails. The tests use their own database file.
-- **R-RUN-5** Nothing needs an internet connection after `npm install`.
+- **R-RUN-1** `npm run dev` starts the backend on `http://localhost:8000` and the frontend on `http://localhost:5173`. The terminal prints the address to open. Opening it shows the sign-in screen, and after signing in, the dashboard. It needs `DATABASE_URL`, `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in `.env` (R-AUTH-12).
+- **R-RUN-2** `npm run seed` deletes all data in the database `DATABASE_URL` points to and loads the sample data. It works whether or not the app is running. Because that database is shared, it refuses to run on a Postgres database that already holds records unless it's given `--force`, and it says which host it is about to empty.
+- **R-RUN-3** On start, after the migrations (R-DEP-3), if the database has no organizations, contacts, deals or activities, the backend loads the sample data. A database with any records is left alone.
+- **R-RUN-4** `npm test` runs the frontend, backend and end-to-end tests, and fails if any test fails. `npm run check` runs everything `npm test` does, plus formatting, linting and the secret check. Both use their own SQLite databases and the test sign-in (R-AUTH-11), and never contact Supabase, whether or not `.env` has the settings, so they pass with no internet connection and CI needs no secrets.
+- **R-RUN-5** Running the app needs an internet connection, for Supabase. Nothing else does after `npm install`: the fonts and every other file are bundled. The tests need no connection.
 - **R-RUN-6** The commands work on Mac, Linux and Windows. No shell-specific syntax goes in the npm scripts.
+- **R-RUN-7** `npm run build` builds the frontend, and `npm start` then runs the app the way Render does (R-DEP-3, R-DEP-4): it applies the migrations and serves the built frontend and the API from one address, `http://localhost:8000` unless `PORT` is set. It reads the same three settings from `.env`, so a person can sign in against Supabase.

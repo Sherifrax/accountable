@@ -18,7 +18,8 @@
 - **R-DATA-5** A deal is **late** when it's open and its close date is before today.
 - **R-DATA-6** **Expected revenue** of a deal = value × probability ÷ 100. Totals are rounded to whole dollars for display.
 - **R-DATA-7** Deal values are whole US dollars, 0 or more. Probability is a whole number from 0 to 100.
-- **R-DATA-8** "Today" is the local date of the computer running the app.
+- **R-DATA-8** "Today" is the date, in the time zone of the computer running the backend, which is UTC on Render. Late deals, overdue follow-ups, "Won this month" and the close date set on Won or Lost all use it.
+- **R-DATA-12** Timestamps (when an activity happened, and when a record was added or changed) are stored in UTC and shown in the viewer's own time zone. Dates without a time (close date, follow-up date) are stored and shown as they are.
 
 **Required fields.** Everything not listed here is optional.
 
@@ -32,6 +33,7 @@
 - **R-DATA-9** Email must look like an email if given. Website is stored as typed, and shown as a link with `https://` added if it has no scheme.
 - **R-DATA-10** An activity is linked to a contact, a deal or both. It must have at least one. Logging one from a deal also links the deal's main contact, if there is one.
 - **R-DATA-11** A follow-up is an activity with a follow-up date. It has a done flag, which starts as false.
+- **R-DATA-13** Who added and last changed every record is recorded as `docs/specs/auth.md` says (R-AUTH-13 to R-AUTH-17). Users can't set it.
 
 **Deleting**
 

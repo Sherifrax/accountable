@@ -9,3 +9,4 @@
 - **R-PIPE-7** Won and Lost show every deal ever won or lost. The columns scroll on their own if long.
 - **R-PIPE-8** Clicking a card (without dragging) opens the deal's page.
 - **R-PIPE-9** Cards can also be moved with the keyboard (the drag library's keyboard support).
+- **R-PIPE-10** Several people may use the board at once. A move saves the user as the deal's last changer. Other people's moves show up the next time the board is loaded or refreshed by the app's normal refetching, not live, and a drop is never silently lost: if the server rejects a move, R-PIPE-5 applies.
